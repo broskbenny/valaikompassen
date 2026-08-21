@@ -32,7 +32,7 @@ npm run serve
 - resultat med poäng, svarstäckning och enkel säkerhetsindikator
 - automatiska tester och CI
 - källspårbart rådataset med **371** kuraterade programrader
-- separat, handgranskad kompassbank med **129** politiskt diskriminerande frågor
+- separat, handgranskad kompassbank med **120** politiskt diskriminerande frågor
 
 ## Två datalager: råmaterial och kompassfrågor
 
@@ -50,19 +50,19 @@ Den är korrekt källspårad men **inte** godkänd för kompassen eftersom den i
 
 ## Frågebank v0.2
 
-Den godkända banken innehåller **129** frågor:
+Den godkända banken innehåller **120** frågor:
 
 | Parti | Godkända frågor |
 |---|---:|
 | Socialdemokraterna (S) | 16 |
-| Moderaterna (M) | 11 |
-| Sverigedemokraterna (SD) | 16 |
-| Centerpartiet (C) | 16 |
-| Vänsterpartiet (V) | 18 |
-| Kristdemokraterna (KD) | 16 |
+| Moderaterna (M) | 10 |
+| Sverigedemokraterna (SD) | 14 |
+| Centerpartiet (C) | 15 |
+| Vänsterpartiet (V) | 17 |
+| Kristdemokraterna (KD) | 13 |
 | Miljöpartiet (MP) | 18 |
-| Liberalerna (L) | 18 |
-| **Totalt** | **129** |
+| Liberalerna (L) | 17 |
+| **Totalt** | **120** |
 
 Varje parti har minst tio godkända frågor, så 80-frågorsläget kan fortfarande ge exakt tio frågor per parti.
 
@@ -107,7 +107,7 @@ Det är **inte** ännu en klassisk partinärhetspoäng. Att ett förslag finns i
 
 ## Varför frågorna balanseras
 
-Programmen är olika långa och olika detaljerade. Appen slumpas därför inte ur alla 371 råposter. Den använder endast de 129 godkända frågorna och `selectBalancedQuestions()` ger varje parti samma kvot samtidigt som frågorna sprids över flera ämnen.
+Programmen är olika långa och olika detaljerade. Appen slumpas därför inte ur alla 371 råposter. Den använder endast de 120 godkända frågorna och `selectBalancedQuestions()` ger varje parti samma kvot samtidigt som frågorna sprids över flera ämnen.
 
 ## Källprincip
 
@@ -132,7 +132,7 @@ Testerna kontrollerar bland annat att frågebankens ID:n finns i råmaterialet, 
 - [x] Källspårbart rådataset
 - [x] Kuraterad första extraktion från samtliga åtta program
 - [x] Separat kvalitetsgrind mot plattityder och självklarheter
-- [x] 129 handgranskade politiskt diskriminerande kompassfrågor
+- [x] 120 handgranskade politiskt diskriminerande kompassfrågor
 - [x] Balanserad frågesampling
 - [x] Partiblint frågeflöde
 - [x] Programaffinitet och resultatvy
