@@ -16,8 +16,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Validate dataset
+      - name: Validate program dataset
         run: python3 scripts/validate_dataset.py
+      - name: Validate Riksdagen vote dataset
+        run: python3 scripts/validate_riksdagen_votes.py
       - name: Run app tests
         run: npm test
       - name: Check JavaScript syntax
