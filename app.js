@@ -6,6 +6,7 @@ import {
   answeredCount,
   substantiveAnswerCount,
   createSessionId,
+  deriveVotePartyPositions,
 } from "./src/core.js";
 
 const PARTY_NAMES = {
@@ -20,11 +21,12 @@ const PARTY_NAMES = {
 };
 
 const TYPE_NAMES = { proposal: "Förslag", position: "Ställningstagande" };
-const STORAGE_KEY = "valaikompassen.session.v3";
+const STORAGE_KEY = "valaikompassen.session.v4";
 
 const state = {
   statements: [],
   sources: [],
+  riksdagen: null,
   questions: [],
   answers: {},
   index: 0,
@@ -53,16 +55,26 @@ function unique(values) {
   return [...new Set(values)];
 }
 
-function buildQuestionBank(questionBank, rawStatements) {
+function assertNoPositionConflict(id, support, oppose) {
+  const overlap = support.filter((party) => oppose.includes(party));
+  if (overlap.length) {
+    throw new Error(`${id} har motstridiga källpositioner för: ${overlap.join(", ")}`);
+  }
+}
+
+function buildQuestionBank(questionBank, rawStatements, voteData) {
   const rawById = new Map(rawStatements.map((row) => [row.id, row]));
-  const singletonIds = questionBank.singleton_ids || [];
+  const voteQuestions = voteData?.questions || [];
+  const mergeProgramIds = new Set(voteQuestions.flatMap((question) => question.merge_program_ids || []));
+  const singletonIds = (questionBank.singleton_ids || []).filter((id) => !mergeProgramIds.has(id));
   const canonicalQuestions = questionBank.canonical_questions || [];
   const referencedIds = [
-    ...singletonIds,
+    ...(questionBank.singleton_ids || []),
     ...canonicalQuestions.flatMap((question) => [
       ...(question.positions?.support || []),
       ...(question.positions?.oppose || []),
     ]),
+    ...mergeProgramIds,
   ];
   const missingIds = unique(referencedIds.filter((id) => !rawById.has(id)));
 
@@ -75,6 +87,9 @@ function buildQuestionBank(questionBank, rawStatements) {
   if (new Set(canonicalQuestions.map((question) => question.id)).size !== canonicalQuestions.length) {
     throw new Error("Frågebanken innehåller dubbla canonical-id:n.");
   }
+  if (new Set(voteQuestions.map((question) => question.id)).size !== voteQuestions.length) {
+    throw new Error("Voteringsbanken innehåller dubbla fråge-id:n.");
+  }
 
   const singletonQuestions = singletonIds.map((id) => {
     const row = rawById.get(id);
@@ -85,7 +100,9 @@ function buildQuestionBank(questionBank, rawStatements) {
       topic: override.topic || row.topic,
       type: override.type || row.type,
       position_sources: { support: [row], oppose: [] },
+      vote_sources: [],
       position_parties: { support: [row.source_party], oppose: [] },
+      source_kinds: ["program"],
     };
   });
 
@@ -94,10 +111,7 @@ function buildQuestionBank(questionBank, rawStatements) {
     const opposeRows = (question.positions?.oppose || []).map((id) => rawById.get(id));
     const supportParties = unique(supportRows.map((row) => row.source_party));
     const opposeParties = unique(opposeRows.map((row) => row.source_party));
-    const overlap = supportParties.filter((party) => opposeParties.includes(party));
-    if (overlap.length) {
-      throw new Error(`${question.id} kodar samma parti på båda sidor: ${overlap.join(", ")}`);
-    }
+    assertNoPositionConflict(question.id, supportParties, opposeParties);
 
     return {
       id: question.id,
@@ -105,18 +119,55 @@ function buildQuestionBank(questionBank, rawStatements) {
       topic: question.topic,
       type: question.type || "position",
       position_sources: { support: supportRows, oppose: opposeRows },
+      vote_sources: [],
       position_parties: { support: supportParties, oppose: opposeParties },
+      source_kinds: ["program"],
     };
   });
 
-  return [...singletonQuestions, ...mergedQuestions];
+  const byId = new Map([...singletonQuestions, ...mergedQuestions].map((question) => [question.id, question]));
+
+  for (const vote of voteQuestions) {
+    const votePositions = deriveVotePartyPositions(vote);
+    const mergedRows = (vote.merge_program_ids || []).map((id) => rawById.get(id));
+    const mergedProgramParties = unique(mergedRows.map((row) => row.source_party));
+    const existing = byId.get(vote.id);
+
+    const support = unique([
+      ...(existing?.position_parties?.support || []),
+      ...mergedProgramParties,
+      ...votePositions.support,
+    ]);
+    const oppose = unique([
+      ...(existing?.position_parties?.oppose || []),
+      ...votePositions.oppose,
+    ]);
+    assertNoPositionConflict(vote.id, support, oppose);
+
+    byId.set(vote.id, {
+      id: vote.id,
+      statement: vote.statement,
+      topic: vote.topic,
+      type: vote.type || existing?.type || "position",
+      position_sources: {
+        support: unique([...(existing?.position_sources?.support || []), ...mergedRows]),
+        oppose: existing?.position_sources?.oppose || [],
+      },
+      vote_sources: [...(existing?.vote_sources || []), vote],
+      position_parties: { support, oppose },
+      source_kinds: unique([...(existing?.source_kinds || []), ...(mergedRows.length ? ["program"] : []), "riksdag_vote"]),
+    });
+  }
+
+  return [...byId.values()];
 }
 
 async function loadData() {
   try {
-    const [sourceResponse, questionBank, ...statementTexts] = await Promise.all([
+    const [sourceResponse, questionBank, voteData, ...statementTexts] = await Promise.all([
       fetchJson("data/sources.json"),
       fetchJson("data/question-bank.json"),
+      fetchJson("data/riksdagen/votes.json"),
       ...PARTIES.map((party) => fetchText(`data/statements/${party}.jsonl`)),
     ]);
 
@@ -125,11 +176,13 @@ async function loadData() {
       .filter((row) => row.review?.status !== "rejected");
 
     state.sources = sourceResponse.sources || [];
+    state.riksdagen = voteData;
     state.rawStatementCount = rawStatements.length;
-    state.questionBankVersion = questionBank.version || null;
-    state.statements = buildQuestionBank(questionBank, rawStatements);
+    state.questionBankVersion = `${questionBank.version || "unknown"}+riksdag-${voteData.version || "unknown"}`;
+    state.statements = buildQuestionBank(questionBank, rawStatements, voteData);
     state.loaded = true;
-    $("#load-status").textContent = `${state.statements.length} unika, handgranskade sakfrågor laddade från ${state.rawStatementCount} källspårade programrader.`;
+    const voteCount = voteData.questions?.length || 0;
+    $("#load-status").textContent = `${state.statements.length} unika sakfrågor laddade från ${state.rawStatementCount} programrader och ${voteCount} handgranskade riksdagsomröstningar.`;
     $("#start-button").disabled = false;
     renderSourceList();
     offerResume();
@@ -149,7 +202,7 @@ function setView(name) {
 function saveSession() {
   if (!state.sessionId || !state.questions.length) return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    version: 3,
+    version: 4,
     questionBankVersion: state.questionBankVersion,
     sessionId: state.sessionId,
     questionIds: state.questions.map((q) => q.id),
@@ -170,7 +223,7 @@ function readSavedSession() {
 
 function offerResume() {
   const saved = readSavedSession();
-  const canResume = saved?.version === 3
+  const canResume = saved?.version === 4
     && saved?.questionBankVersion === state.questionBankVersion
     && saved?.questionIds?.length
     && saved.questionIds.some((id) => state.statements.some((q) => q.id === id));
@@ -191,7 +244,7 @@ function startSession() {
 
 function resumeSession() {
   const saved = readSavedSession();
-  if (!saved || saved.questionBankVersion !== state.questionBankVersion) return;
+  if (!saved || saved.version !== 4 || saved.questionBankVersion !== state.questionBankVersion) return;
   const byId = new Map(state.statements.map((q) => [q.id, q]));
   state.questions = saved.questionIds.map((id) => byId.get(id)).filter(Boolean);
   state.answers = saved.answers || {};
@@ -254,23 +307,50 @@ function renderSourceRows(rows, heading) {
   `;
 }
 
+function renderVoteSource(vote) {
+  const positions = deriveVotePartyPositions(vote);
+  return `
+    <div class="source-position-group vote-source">
+      <h3>Riksdagsomröstning</h3>
+      <div class="source-item">
+        <strong>${escapeHtml(vote.source?.title || "Riksdagsbeslut")}</strong>
+        <p>${escapeHtml(vote.source?.decision || "")}</p>
+        <small>${escapeHtml(vote.source?.date || "")} · ${escapeHtml(vote.source?.rm || "")}:${escapeHtml(vote.source?.bet || "")} · punkt ${escapeHtml(vote.source?.point || "")}</small>
+        <div class="vote-tallies">
+          ${PARTIES.map((party) => {
+            const tally = vote.party_tallies?.[party] || {};
+            const stance = positions.support.includes(party)
+              ? "stödjer"
+              : positions.oppose.includes(party) ? "motsätter sig" : "ej kodad";
+            return `<div class="vote-tally-row"><strong>${escapeHtml(PARTY_NAMES[party])}</strong><span>${escapeHtml(stance)} · Ja ${Number(tally.yes || 0)} · Nej ${Number(tally.no || 0)} · Avstår ${Number(tally.abstain || 0)} · Frånvarande ${Number(tally.absent || 0)}</span></div>`;
+          }).join("")}
+        </div>
+        <p class="source-method-note">Partiposition kodas bara när minst ${Math.round(Number(vote.cohesion_threshold || 0.8) * 100)} % av partiets avgivna ja/nej-röster går åt samma håll och minst ${Number(vote.minimum_decisive_votes || 3)} ledamöter har röstat ja eller nej. Avstående och frånvaro blir aldrig automatiskt en position.</p>
+        <a href="${escapeAttribute(vote.source?.url || state.riksdagen?.source_url || "")}" target="_blank" rel="noreferrer">Öppna omröstningen hos Riksdagen ↗</a>
+      </div>
+    </div>
+  `;
+}
+
 function renderQuestionSource(question) {
   const supportRows = question.position_sources?.support || [];
   const opposeRows = question.position_sources?.oppose || [];
-  if (!supportRows.length && !opposeRows.length) {
+  const voteRows = question.vote_sources || [];
+  if (!supportRows.length && !opposeRows.length && !voteRows.length) {
     $("#source-content").textContent = "Källuppgift saknas.";
     return;
   }
 
-  const sourceCount = supportRows.length + opposeRows.length;
+  const sourceCount = supportRows.length + opposeRows.length + voteRows.length;
   const intro = sourceCount > 1
-    ? "Frågan sammanför en gemensam sakpolitisk kärna. De källnära parafraserna nedan visar respektive partis nyans."
-    : "Källnära parafras och originalkälla:";
+    ? "Frågan kan ha stöd i flera källor. Varje källa visas separat; flera källor ger inte extra vikt i poängen."
+    : "Källa och underlag:";
 
   $("#source-content").innerHTML = `
     <p>${escapeHtml(intro)}</p>
-    ${renderSourceRows(supportRows, "Stödjer påståendet")}
-    ${renderSourceRows(opposeRows, "Motsätter sig påståendet")}
+    ${renderSourceRows(supportRows, "Programkällor som stödjer påståendet")}
+    ${renderSourceRows(opposeRows, "Programkällor som motsätter sig påståendet")}
+    ${voteRows.map(renderVoteSource).join("")}
   `;
 }
 
@@ -304,7 +384,7 @@ function showResults() {
   const substantive = substantiveAnswerCount(state.questions, state.answers);
   const results = computePartyResults(state.questions, state.answers);
 
-  $("#results-summary").textContent = `Du besvarade ${answered} av ${state.questions.length} frågor. ${substantive} svar räknas in; “vet ej” påverkar inte resultatet. Ett svar kan räknas för flera partier när deras program uttryckligen intar samma ståndpunkt.`;
+  $("#results-summary").textContent = `Du besvarade ${answered} av ${state.questions.length} frågor. ${substantive} svar räknas in; “vet ej” påverkar inte resultatet. Ett svar kan räknas för flera partier när deras position kan beläggas i partiprogram eller i en direkt riksdagsomröstning.`;
   $("#results-list").innerHTML = results.map((result, i) => {
     const score = result.score ?? 0;
     const scoreLabel = result.score === null ? "–" : String(result.score);
@@ -326,7 +406,7 @@ function showResults() {
 }
 
 function renderSourceList() {
-  $("#source-list").innerHTML = state.sources.map((source) => {
+  const programSources = state.sources.map((source) => {
     const update = source.last_program_update ? ` · uppdaterat ${source.last_program_update}` : "";
     return `
       <div class="source-item">
@@ -336,6 +416,16 @@ function renderSourceList() {
       </div>
     `;
   }).join("");
+
+  const riksdagenSource = state.riksdagen ? `
+    <div class="source-item">
+      <strong>Sveriges riksdag · öppna data</strong>
+      <small>Direkta voteringsutfall från mandatperioden ${escapeHtml(state.riksdagen.scope?.mandate_period || "2022–2026")}. Endast manuellt granskade sakvoteringar används.</small><br>
+      <a href="${escapeAttribute(state.riksdagen.source_url || "")}" target="_blank" rel="noreferrer">Riksdagens öppna data ↗</a>
+    </div>
+  ` : "";
+
+  $("#source-list").innerHTML = programSources + riksdagenSource;
 }
 
 function showAbout() { setView("about"); }
