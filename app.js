@@ -67,7 +67,7 @@ async function loadData() {
 function setView(name) {
   $$(".view").forEach((view) => view.classList.add("hidden"));
   $(`#${name}-view`).classList.remove("hidden");
-  window.scrollTo({ top: 0, behavior: "instant" });
+  window.scrollTo({ top: 0, behavior: "auto" });
   $("#main").focus({ preventScroll: true });
 }
 
@@ -143,9 +143,12 @@ function renderQuestion() {
   $("#next-button").textContent = state.index === state.questions.length - 1 ? "Visa resultat" : "Nästa";
 
   const details = $("#source-details");
+  const summary = details.querySelector("summary");
   details.open = false;
   details.classList.toggle("locked", !answered);
-  details.querySelector("summary").textContent = answered ? "Visa källan" : "Visa källan efter att jag svarat";
+  summary.textContent = answered ? "Visa källan" : "Visa källan efter att jag svarat";
+  summary.tabIndex = answered ? 0 : -1;
+  summary.setAttribute("aria-disabled", answered ? "false" : "true");
   renderQuestionSource(question);
 }
 
@@ -252,6 +255,12 @@ $("#next-button").addEventListener("click", nextQuestion);
 $("#previous-button").addEventListener("click", previousQuestion);
 $("#show-results-early").addEventListener("click", showResults);
 $("#restart-button").addEventListener("click", () => { localStorage.removeItem(STORAGE_KEY); showHome(); startSession(); });
+$("#source-details").addEventListener("toggle", (event) => {
+  const current = state.questions[state.index];
+  if (event.currentTarget.open && current && !state.answers[current.id]) {
+    event.currentTarget.open = false;
+  }
+});
 
 $("#start-button").disabled = true;
 loadData();
