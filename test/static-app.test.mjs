@@ -20,6 +20,12 @@ test("app loads all eight party files and source registry", () => {
   assert.match(app, /data\/sources\.json/);
 });
 
+test("party source stays gated until the current question is answered", () => {
+  assert.match(app, /summary\.tabIndex = answered \? 0 : -1/);
+  assert.match(app, /!state\.answers\[current\.id\]/);
+  assert.match(app, /event\.currentTarget\.open = false/);
+});
+
 test("responsive and reduced-motion CSS are present", () => {
   assert.match(css, /@media \(max-width: 760px\)/);
   assert.match(css, /prefers-reduced-motion/);
