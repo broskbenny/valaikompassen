@@ -6,7 +6,7 @@
   "scope": {
     "mandate_period": "2022-2026",
     "riksmoten": ["2022/23", "2023/24", "2024/25", "2025/26"],
-    "rule": "Only curated substantive roll-call votes where the yes/no direction can be mapped to one concrete policy statement."
+    "rule": "Only curated substantive roll-call votes where the yes/no direction can be mapped to one concrete policy statement. Procedural votes, ambiguous motion rejections and bundled decisions that cannot be represented faithfully as one answerable proposition are excluded."
   },
   "questions": [
     {
@@ -14,6 +14,7 @@
       "statement": "Sverige ska vara medlem i Nato.",
       "topic": "försvar",
       "type": "position",
+      "merge_program_ids": ["M-2021-006"],
       "source": {"rm":"2022/23","bet":"UU16","point":1,"date":"2023-03-22","title":"Sveriges medlemskap i Nato","decision":"Utskottets förslag mot reservation 1 (V, MP)","url":"https://data.riksdagen.se/dokument/HA19UU16p1"},
       "yes_means": "support",
       "cohesion_threshold": 0.8,
@@ -22,7 +23,7 @@
     },
     {
       "id": "R-2024-security-zones",
-      "statement": "Polisen ska få införa säkerhetszoner där personer kan kroppsvisiteras och fordon genomsökas utan konkret brottsmisstanke för att söka efter vapen.",
+      "statement": "Polisen ska få införa säkerhetszoner där personer kan kroppsvisiteras och fordon genomsökas för att söka efter vapen.",
       "topic": "kriminalpolitik",
       "type": "proposal",
       "source": {"rm":"2023/24","bet":"JuU13","point":1,"date":"2024-04-10","title":"Säkerhetszoner","decision":"Utskottets förslag mot reservation 1 (S, V, C, MP)","url":"https://data.riksdagen.se/dokument/HB19JuU13p1"},
@@ -33,7 +34,7 @@
     },
     {
       "id": "R-2024-preventive-area-bans",
-      "statement": "En person ska kunna förbjudas att vistas i ett avgränsat offentligt område för att förebygga allvarlig gängrelaterad brottslighet, även utan att personen har dömts för brott.",
+      "statement": "En person som främjar en grupps brottslighet ska kunna förbjudas att vistas i ett avgränsat offentligt område om det finns risk för allvarlig gängrelaterad brottslighet.",
       "topic": "kriminalpolitik",
       "type": "proposal",
       "source": {"rm":"2023/24","bet":"JuU12","point":1,"date":"2024-01-24","title":"Preventiva vistelseförbud","decision":"Utskottets förslag mot reservation 1 (V)","url":"https://data.riksdagen.se/dokument/HB19JuU12p1"},
@@ -54,19 +55,8 @@
       "party_tallies": {"S":{"yes":92,"no":0,"abstain":0,"absent":14},"SD":{"yes":63,"no":0,"abstain":0,"absent":9},"M":{"yes":59,"no":0,"abstain":0,"absent":9},"V":{"yes":0,"no":21,"abstain":0,"absent":3},"C":{"yes":0,"no":21,"abstain":0,"absent":3},"KD":{"yes":15,"no":0,"abstain":0,"absent":4},"MP":{"yes":0,"no":14,"abstain":0,"absent":4},"L":{"yes":15,"no":0,"abstain":0,"absent":1}}
     },
     {
-      "id": "R-2024-legal-gender-16",
-      "statement": "Det juridiska könet ska kunna ändras från 16 års ålder efter en förenklad prövning, med vårdnadshavarens ansökan för den som är under 18.",
-      "topic": "rättigheter",
-      "type": "proposal",
-      "source": {"rm":"2023/24","bet":"SoU22","point":1,"date":"2024-04-17","title":"Förbättrade möjligheter att ändra kön","decision":"Utskottets förslag mot reservation 1 (SD, KD)","url":"https://data.riksdagen.se/dokument/HB19SoU22p1"},
-      "yes_means": "support",
-      "cohesion_threshold": 0.8,
-      "minimum_decisive_votes": 3,
-      "party_tallies": {"S":{"yes":96,"no":1,"abstain":0,"absent":9},"SD":{"yes":0,"no":72,"abstain":0,"absent":0},"M":{"yes":58,"no":1,"abstain":0,"absent":9},"V":{"yes":22,"no":0,"abstain":0,"absent":2},"C":{"yes":24,"no":0,"abstain":0,"absent":0},"KD":{"yes":0,"no":19,"abstain":0,"absent":0},"MP":{"yes":17,"no":0,"abstain":0,"absent":1},"L":{"yes":16,"no":0,"abstain":0,"absent":0}}
-    },
-    {
       "id": "R-2023-reduction-obligation-6",
-      "statement": "Reduktionsplikten för bensin och diesel ska sänkas till 6 procent.",
+      "statement": "Reduktionsplikten för bensin och diesel ska sänkas till 6 procent för 2024–2026 och de tidigare beslutade nivåerna för 2027–2030 ska tas bort.",
       "topic": "klimat",
       "type": "proposal",
       "source": {"rm":"2023/24","bet":"MJU5","point":1,"date":"2023-11-30","title":"Sänkning av reduktionsplikten för bensin och diesel","decision":"Utskottets förslag mot reservation 1 (S, V, C, MP)","url":"https://data.riksdagen.se/dokument/HB19MJU5p1"},
