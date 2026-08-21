@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://valaikompassen/schema/statement.schema.json",
+  "title": "Valkompass statement",
+  "type": "object",
+  "required": ["id", "source_party", "type", "topic", "statement", "source", "review"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^(S|M|SD|C|V|KD|MP|L)-[0-9]{4}-[0-9]{3,4}$"},
+    "source_party": {"enum": ["S", "M", "SD", "C", "V", "KD", "MP", "L"]},
+    "type": {"enum": ["proposal", "position"]},
+    "topic": {"type": "string"},
+    "subtopic": {"type": ["string", "null"]},
+    "statement": {"type": "string", "minLength": 8, "maxLength": 320},
+    "source": {
+      "type": "object",
+      "required": ["document_id", "pdf_page", "section"],
+      "properties": {
+        "document_id": {"type": "string"},
+        "pdf_page": {"type": "integer", "minimum": 1},
+        "section": {"type": "string"},
+        "locator_note": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "review": {
+      "type": "object",
+      "required": ["status", "confidence"],
+      "properties": {
+        "status": {"enum": ["curated", "needs_review", "rejected"]},
+        "confidence": {"enum": ["high", "medium", "low"]},
+        "notes": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "canonical_issue_id": {
+      "description": "Reserved for later cross-party normalization/scoring.",
+      "type": ["string", "null"]
+    }
+  },
+  "additionalProperties": false
+}
