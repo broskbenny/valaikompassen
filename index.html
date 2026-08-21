@@ -24,7 +24,7 @@
     <section id="start-view" class="view hero-view" aria-labelledby="start-title">
       <p class="eyebrow">Riksdagsvalet 2026</p>
       <h1 id="start-title">Tyck om sakpolitiken<br><span>innan du ser partiet.</span></h1>
-      <p class="lead">Du får konkreta politiska vägval hämtade ur de åtta riksdagspartiernas senaste långsiktiga parti-, idé- eller principprogram. Allmänna mål och plattityder sorteras bort, och partiet bakom påståendet hålls dolt medan du svarar.</p>
+      <p class="lead">Du får konkreta politiska vägval hämtade ur de åtta riksdagspartiernas senaste långsiktiga parti-, idé- eller principprogram. Plattityder och självrättfärdigande formuleringar sorteras bort. När flera partier uttrycker samma sak ställs frågan bara en gång.</p>
 
       <div class="start-grid">
         <div class="start-card">
@@ -32,15 +32,15 @@
           <div class="length-options" role="radiogroup" aria-label="Antal frågor">
             <label class="length-option">
               <input type="radio" name="length" value="24" />
-              <span><strong>24</strong><small>Snabb · 3 per parti</small></span>
+              <span><strong>24</strong><small>Snabb</small></span>
             </label>
             <label class="length-option selected">
               <input type="radio" name="length" value="48" checked />
-              <span><strong>48</strong><small>Standard · 6 per parti</small></span>
+              <span><strong>48</strong><small>Standard</small></span>
             </label>
             <label class="length-option">
               <input type="radio" name="length" value="80" />
-              <span><strong>80</strong><small>Djup · 10 per parti</small></span>
+              <span><strong>80</strong><small>Djup</small></span>
             </label>
           </div>
           <button id="start-button" class="primary-button">Starta kompassen</button>
@@ -49,8 +49,8 @@
 
         <aside class="method-card" aria-label="Så fungerar det">
           <div><span class="method-number">01</span><p>Bara frågor med ett konkret politiskt vägval och en rimlig motposition.</p></div>
-          <div><span class="method-number">02</span><p>Ett påstående i taget. Ingen partilogga förrän du har svarat.</p></div>
-          <div><span class="method-number">03</span><p>Resultatet visar hur väl du gillar varje partis egna programskrivningar.</p></div>
+          <div><span class="method-number">02</span><p>Samma sakfråga ställs en gång även när flera partier delar ståndpunkt.</p></div>
+          <div><span class="method-number">03</span><p>Resultatet använder bara partipositioner som kan beläggas direkt i källmaterialet.</p></div>
         </aside>
       </div>
       <p id="load-status" class="load-status" role="status">Laddar källmaterial…</p>
@@ -81,7 +81,7 @@
         </div>
 
         <details id="source-details" class="source-details">
-          <summary>Visa källan efter att jag svarat</summary>
+          <summary>Visa källor efter att jag svarat</summary>
           <div id="source-content"></div>
         </details>
       </article>
@@ -93,8 +93,8 @@
     </section>
 
     <section id="results-view" class="view hidden" aria-labelledby="results-title">
-      <p class="eyebrow">Din programaffinitet</p>
-      <h1 id="results-title">Vilka programskrivningar<br><span>gillade du mest?</span></h1>
+      <p class="eyebrow">Din källstödda sakfrågematchning</p>
+      <h1 id="results-title">Vilka partier ligger närmast<br><span>dina sakpolitiska svar?</span></h1>
       <p id="results-summary" class="lead"></p>
       <div id="results-list" class="results-list"></div>
       <div class="results-actions">
@@ -102,8 +102,8 @@
         <button class="secondary-button" data-action="about">Läs metod & begränsningar</button>
       </div>
       <div class="result-note">
-        <h2>Det här är inte en traditionell valkompasspoäng</h2>
-        <p>Varje parti bedöms här bara utifrån påståenden som kommer från det egna långsiktiga programmet. Urvalet är balanserat mellan partierna, men programmen är olika detaljerade och samma sakfråga är ännu inte kodad mot samtliga åtta partier. Resultatet ska därför läsas som <strong>programaffinitet</strong>, inte som en prognos över vilket parti du “borde” rösta på.</p>
+        <h2>Källstödd, men fortfarande ofullständig</h2>
+        <p>Samma fråga kan räknas för flera partier när deras program uttryckligen stödjer samma ståndpunkt. När ett program uttryckligen intar motsatt position räknas svaret omvänt. Om ett parti inte uttalar sig om frågan får det ingen poäng alls från den frågan — tystnad tolkas aldrig som motstånd. Matrisen täcker ännu inte samtliga åtta partier på varje sakfråga.</p>
       </div>
     </section>
 
@@ -119,14 +119,16 @@
         </article>
         <article>
           <h2>Från program till fråga</h2>
-          <p>Först extraheras källspårade förslag och ställningstaganden. Därefter görs en separat kompassgranskning. En rad får bara bli fråga om den innehåller ett konkret politiskt val och det finns en rimlig seriös motposition. Formuleringar som bara säger att skolan ska vara bra, vården hålla hög kvalitet eller samhället vara tryggt stannar i råmaterialet och visas inte i kompassen.</p>
-          <p>Typiska godkända frågor gäller exempelvis förbud och tillstånd, skatter och utgifter, ägar- och huvudmannaskap, rättigheter och skyldigheter, kvalificeringskrav, konkreta mål eller institutionella förändringar. Frågebanken finns öppet i <code>data/question-bank.json</code>.</p>
+          <p>Först extraheras källspårade förslag och ställningstaganden. Därefter görs en separat kompassgranskning. En formulering får bara bli fråga om den innehåller ett konkret politiskt val och det finns en rimlig seriös motposition.</p>
+          <p>Det räcker inte att meningen låter politisk. Villkor som “lika bra eller bättre”, “nödvändigt”, “effektivt” eller “rimligt” kan baka in argumentet för svaret och gör då frågan olämplig. Vi föredrar att ta bort en sådan formulering framför att fylla en partikvot.</p>
+          <h2>Gemensamma sakfrågor</h2>
+          <p>När flera partier uttrycker i princip samma ståndpunkt formuleras en gemensam neutral kärnfråga och ställs bara en gång. Efter svaret visas varje partis källnära parafras, så skillnader i exempelvis villkor eller ambitionsnivå går att se. Om skillnaden är politiskt viktig — som en exakt arbetstidsnivå — behålls separata frågor.</p>
           <h2>Urvalet i en omgång</h2>
-          <p>Frågorna slumpas ur den särskilt handgranskade frågebanken, inte ur alla extraherade programrader. Varje parti får lika många frågor och algoritmen försöker sprida dem över flera ämnesområden. Det minskar både plattityder och risken att ett långt eller detaljrikt program dominerar.</p>
+          <p>Frågorna slumpas ur den handgranskade banken. Algoritmen försöker ge jämn källtäckning mellan partierna och sprida ämnen, men den tvingar inte fram exakt lika många frågor per parti. Ett abstrakt program får alltså inte sämre frågor godkända bara för att fylla en kvot.</p>
           <h2>Poängen</h2>
-          <p>Mycket dåligt = −2, dåligt = −1, bra = +1 och mycket bra = +2. “Vet ej” räknas inte in. Medelvärdet per parti skalas sedan till 0–100. Resultatet visar därför hur positiv du varit till ett partis egna programskrivningar.</p>
-          <h2>Nästa metodlager</h2>
-          <p>Projektets nästa datasteg är en gemensam frågematris där samma neutrala sakfråga kodas mot alla åtta partier med källstöd. Först då går det att göra en klassisk positionsmatchning utan att blanda ihop programmens olika detaljnivå.</p>
+          <p>Mycket dåligt = −2, dåligt = −1, bra = +1 och mycket bra = +2. “Vet ej” räknas inte in. För ett parti som uttryckligen stödjer påståendet används svaret direkt. För ett parti som uttryckligen motsätter sig påståendet vänds tecknet. Medelvärdet skalas sedan till 0–100.</p>
+          <h2>Begränsningen</h2>
+          <p>Vi kodar bara positioner som faktiskt kan beläggas i programmen. Att ett parti saknar en formulering betyder inte att partiet är emot den. Nästa metodsteg är därför att öka täckningen så att fler gemensamma sakfrågor har källkodade positioner för samtliga åtta partier.</p>
         </article>
       </div>
     </section>
