@@ -15,9 +15,12 @@ test("app has all required views and answer options", () => {
   }
 });
 
-test("app loads all eight party files and source registry", () => {
+test("app loads the source corpus through the explicit question allowlist", () => {
   assert.match(app, /PARTIES\.map\(\(party\) => fetchText\(`data\/statements\/\$\{party\}\.jsonl`\)\)/);
   assert.match(app, /data\/sources\.json/);
+  assert.match(app, /data\/question-bank\.json/);
+  assert.match(app, /question_ids_by_party/);
+  assert.match(app, /approvedIds\.map\(\(id\) => rawById\.get\(id\)\)/);
 });
 
 test("party source stays gated until the current question is answered", () => {
