@@ -71,19 +71,19 @@ Källans URL lagras centralt i `data/sources.json`. I appen hålls partikällan 
 
 ## 6. Frågebank v0.2
 
-Den handgranskade frågebanken innehåller **129** frågor. Antalet godkända kandidater per parti är:
+Den handgranskade frågebanken innehåller **120** frågor. Antalet godkända kandidater per parti är:
 
 | Parti | Godkända kompassfrågor |
 |---|---:|
 | S | 16 |
-| M | 11 |
-| SD | 16 |
-| C | 16 |
-| V | 18 |
-| KD | 16 |
+| M | 10 |
+| SD | 14 |
+| C | 15 |
+| V | 17 |
+| KD | 13 |
 | MP | 18 |
-| L | 18 |
-| **Totalt** | **129** |
+| L | 17 |
+| **Totalt** | **120** |
 
 Skillnaden mellan partierna är tillåten på banknivå eftersom urvalet i en faktisk omgång alltid balanseras. Varje parti måste ha minst tio godkända frågor, vilket gör att även 80-frågorsläget kan ge exakt tio frågor per parti.
 
