@@ -1,97 +1,90 @@
 # Val AI-kompassen 2026
 
-En källspårbar, partiblind valkompass byggd på de åtta riksdagspartiernas senaste officiella långsiktiga parti-, idé- eller principprogram.
+En källspårbar, partiblind valkompass som kombinerar två typer av politiska förstahandskällor:
 
-Appen visar ett konkret politiskt vägval i taget utan att avslöja partierna bakom positionerna. Användaren svarar **mycket dåligt**, **dåligt**, **bra**, **mycket bra** eller **vet ej / ingen åsikt**. Efter svaret visas de källkodade partipositionerna, PDF-sida, avsnitt och originaldokument.
+1. de åtta riksdagspartiernas senaste officiella långsiktiga parti-, idé- eller principprogram,
+2. handgranskade direkta omröstningar från **Sveriges riksdags öppna data** under mandatperioden 2022–2026.
+
+Appen visar ett konkret politiskt vägval i taget utan att avslöja partierna bakom positionerna. Efter svaret visas källorna och, för riksdagsvoteringar, de faktiska Ja/Nej/Avstår/Frånvarande-talen per parti.
 
 ## Kör appen
 
-Projektet är avsiktligt byggt utan externa frontendberoenden.
+Projektet är byggt utan externa frontendberoenden.
 
 ```bash
 python3 -m http.server 8000
 ```
 
-Öppna sedan `http://localhost:8000`.
-
-Alternativt:
-
-```bash
-npm run serve
-```
+Öppna `http://localhost:8000`. Alternativt: `npm run serve`.
 
 ## Vad som ingår
 
-- responsiv single-page-app i ren HTML/CSS/JavaScript
 - 24, 48 eller 80 unika sakfrågor per omgång
 - partiblint frågeflöde
-- separat kvalitetsgrind mot plattityder och självrättfärdigande formuleringar
-- sammanslagning av semantiskt likvärdiga frågor mellan partier
-- explicit källkodning av både stöd och motstånd där programmen medger det
-- källnära partinyanser visas först efter att användaren har svarat
-- urval som balanserar källtäckning utan att tvinga fram lika stora partikvoter
-- `localStorage` för att fortsätta en avbruten omgång
-- källstödd sakfrågematchning med redovisat underlag per parti
-- automatiska regressionstester och CI
-- källspårbart rådataset med **371** kuraterade programrader
-- handgranskad frågebank v0.3 med **99 unika frågor**
+- kvalitetsgrind mot plattityder, abstrakta maximer och självrättfärdigande formuleringar
+- sammanslagning av semantiskt likvärdiga frågor mellan partier och källtyper
+- explicit `support`/`oppose` när positionen kan beläggas
+- **371** källspårade programrader
+- programbank v0.3 med **99** unika frågor före sammanfogning med voteringslagret
+- första voteringsbank med **8** handgranskade direkta riksdagsomröstningar
+- Nato-frågan sammanfogas med befintlig programkälla, så den kombinerade banken innehåller **106 unika sakfrågor**
+- källstödd sakfrågematchning där samma fråga aldrig får extra vikt bara för att den har flera källor
+- source-aware sampling: direkta voteringsfrågor kompletterar programmaterialet utan att dominera en omgång
+- lokal sessionsåterställning
+- automatiska validatorer, regressionstester och CI
 
-## Tre lager: råmaterial, kvalitetsgrind och gemensamma sakfrågor
+## Fyra lager
 
-`data/statements/*.jsonl` innehåller den breda, källspårade extraktionen. Alla dessa rader är **inte** automatiskt lämpliga som valkompassfrågor.
+### 1. Programmens råmaterial
 
-`data/question-bank.json` är det hårdare kompasslagret. En formulering måste innehålla ett verkligt politiskt val och en rimlig seriös motposition. Det räcker alltså inte att en mening låter politisk.
+`data/statements/*.jsonl` innehåller 371 källspårade programparafraser. En korrekt programparafras är inte automatiskt en bra valkompassfråga.
 
-Två typer av formuleringar sorteras särskilt hårt bort:
+### 2. Programmens kvalitetsgrind
 
-1. **Plattityder och allmänt positiva mål**, exempelvis att vården ska ha hög kvalitet eller att skolan ska vara bra.
-2. **Självrättfärdigande villkor**, där argumentet för svaret byggs in i frågan genom ord som “bättre”, “nödvändigt”, “effektivt” eller “rimligt”.
+`data/question-bank.json` innehåller den hårdare programbaserade frågebanken. En fråga måste innebära ett verkligt politiskt val där en seriös motposition är möjlig. Formuleringar som “hög kvalitet”, “lika bra eller bättre”, “nödvändigt” eller “effektivt” får inte bära själva argumentet för svaret.
 
-Ett uttryckligt regressionsexempel är `M-2021-009`:
+Exempel på råposter som medvetet är spärrade:
 
 > Det offentliga ska inte utföra uppgifter som andra kan göra lika bra eller bättre.
 
-Raden är en korrekt programparafras men en dålig valkompassfråga: villkoret “lika bra eller bättre” gör ett nej onaturligt och “uppgifter” döljer vilken konkret verksamhet konflikten gäller. Den är därför spärrad från kompassen.
-
-Samma sak gäller `M-2021-031`:
-
 > Sjukvården ska präglas av hög kvalitet, god tillgänglighet och valfrihet.
 
-Den ligger kvar i råmaterialet men är inte en kompassfråga.
+### 3. Gemensamma canonical-frågor
 
-## Frågebank v0.3: 99 unika sakfrågor
+När flera partier uttrycker samma sak ställs frågan en gång. Viktiga nyanser visas i källorna efter svaret. Uttryckligt motstånd kan kodas på samma fråga i stället för att skapa en spegelvänd dubblett.
 
-Banken består av:
+### 4. Direkta riksdagsomröstningar
 
-- **81** starka frågor som fortfarande kan knytas till en enskild källrad,
-- **18** gemensamma sakfrågor som sammanför semantiskt likvärdiga positioner från flera partiprogram.
+`data/riksdagen/votes.json` innehåller den manuellt granskade voteringsbanken. Den första versionen använder åtta konkreta sakvoteringar från mandatperioden 2022–2026, bland annat Nato, säkerhetszoner, preventiva vistelseförbud, anonyma vittnen, reduktionsplikt, tandvård, gårdsförsäljning och finansiering av ny kärnkraft.
 
-När partiernas gemensamma kärna är densamma ställs frågan bara en gång. Efter svaret visas varje partis källnära parafras, så att viktiga skillnader i villkor eller ambitionsnivå inte försvinner.
+En rå `Ja`-röst betyder **inte automatiskt** att partiet stödjer valkompassens formulering. För varje kandidat granskas den exakta förslagspunkten och motförslaget. Procedurfrågor, tvetydiga avslagsvoteringar och beslutspaket som inte går att återge troget i en enda fråga tas bort.
 
-Exempel på sammanslagna frågor är bland annat:
+Detaljer: `docs/RIKSDAGEN_OPEN_DATA.md`.
 
-- statligt huvudansvar för skolan,
-- skolval,
-- författningsdomstol,
-- kärnkraftens långsiktiga roll,
-- permanenta uppehållstillstånd,
-- kärnvapen på svenskt territorium,
-- civilplikt,
-- abortskydd i grundlagen,
-- behovsstyrd arbetskraftsinvandring,
-- euron,
-- tandvårdens finansiering,
-- privata vårdgivare och friskolor.
+## Hur partipositioner räknas från en votering
 
-I vissa gemensamma frågor finns också en explicit motsatt programposition. Då kodas den som `oppose` i stället för att skapa en separat spegelvänd fråga.
+Partiets ledamöter kan rösta `Ja`, `Nej`, `Avstår` eller vara `Frånvarande`.
 
-## Varför vi inte längre kräver lika många frågor per parti
+En voteringsposition kodas bara när:
 
-Den tidigare versionen krävde minst tio godkända frågor från varje parti för att kunna ge exakt lika stora partikvoter. Det skapade fel incitament: ett mer abstrakt idéprogram riskerade att få svagare formuleringar godkända bara för att fylla kvoten.
+- minst 3 ledamöter från partiet har röstat Ja eller Nej, och
+- minst 80 % av de avgivna Ja/Nej-rösterna går åt samma håll.
 
-v0.3 gör tvärtom. Kvalitetsgränsen är fast. Om ett program ger färre konkreta, diskriminerande frågor får partiet färre källkodade positioner i banken. Urvalsalgoritmen försöker balansera täckningen mellan partierna så långt materialet räcker, men den fabricerar inte jämnhet genom att sänka frågekvaliteten.
+Avstående och frånvaro blir aldrig automatiskt en position. En splittrad eller huvudsakligen avstående partigrupp lämnas okodad. I gårdsförsäljningsvoteringen lämnas exempelvis Centerpartiet okodat i stället för att en enda Ja-röst bland många avståenden görs till partiposition.
 
-## Resultatet: källstödd sakfrågematchning
+## Samma fråga från program och votering
+
+Källor multiplicerar inte frågor eller poäng. Nato är ett exempel: Moderaternas programkälla och den direkta riksdagsvoteringen samlas på samma sakfråga.
+
+Om program och votering skulle koda samma parti på motsatta sidor av exakt samma fråga kastar databyggaren ett fel. Konflikten måste granskas manuellt; appen väljer aldrig tyst en källa framför en annan.
+
+## Sampling
+
+Programbankens olika källtäckning används fortfarande utan hårda partikvoter. Den nya voteringskällan har dessutom en avgränsad målandel i urvalet: ungefär 20 % när tillräckligt många voteringsfrågor finns. Med den första banken innebär det 5 direkta voteringsfrågor i en 24-frågorsomgång och samtliga 8 i 48- och 80-frågorslägena.
+
+När voteringsbanken växer kommer samma regel förhindra att hundratals riksdagsvoteringar tränger undan de långsiktiga programfrågorna.
+
+## Resultatet
 
 Svar kodas som:
 
@@ -99,78 +92,60 @@ Svar kodas som:
 - dåligt = `-1`
 - bra = `+1`
 - mycket bra = `+2`
-- vet ej = räknas inte i poängen
+- vet ej = exkluderas
 
-För varje fråga gäller:
+För en belagd stödposition används värdet direkt; för explicit motstånd vänds tecknet. Om ett parti saknar en källkodad position påverkas partiets poäng inte alls. Varje sakfråga räknas högst en gång per parti även om både program och votering stödjer samma kodning.
 
-- om ett partis program **stödjer** påståendet används svarsvärdet direkt,
-- om ett partis program uttryckligen **motsätter sig** påståendet vänds tecknet,
-- om partiet inte har en källkodad position på frågan påverkas partiets resultat inte alls.
+Medelvärdet per parti skalas till `0–100`. Resultatvyn visar samtidigt hur många källkodade positioner som faktiskt ligger bakom poängen.
 
-Tystnad eller frånvaro i ett program tolkas alltså **aldrig** som motstånd.
+## Riksdagens rådata: ingest, inte automatisk publicering
 
-Medelvärdet per parti skalas från `-2…+2` till `0…100`. Resultatvyn visar samtidigt hur många källkodade positioner som faktiskt ligger bakom partiets poäng.
+`scripts/sync_riksdagen_votes.py` kan ladda ned riksdagens voteringsdataset och bygga en kandidatlista för 2022/23–2025/26. Kandidatlistan är **inte** en frågebank och kopplas aldrig automatiskt till appen.
 
-Detta är mer informativt än den tidigare rena programaffiniteten, men ännu inte en full klassisk valkompass: samma sakfråga är inte färdigkodad för samtliga åtta partier i hela banken.
+Exempel:
 
-## Rådataset v0.1
+```bash
+python3 scripts/sync_riksdagen_votes.py --rm 2025/26 --output /tmp/voteringar-202526.json
+```
 
-| Parti | Råposter |
-|---|---:|
-| Socialdemokraterna (S) | 53 |
-| Moderaterna (M) | 34 |
-| Sverigedemokraterna (SD) | 44 |
-| Centerpartiet (C) | 41 |
-| Vänsterpartiet (V) | 55 |
-| Kristdemokraterna (KD) | 43 |
-| Miljöpartiet (MP) | 50 |
-| Liberalerna (L) | 51 |
-| **Totalt** | **371** |
+Varje kandidat måste därefter granskas mot förslagspunkten och motförslaget innan den kan läggas i `data/riksdagen/votes.json`.
 
-Varje råpost är en kort neutral parafras och går att spåra till dokument, PDF-sida och avsnitt.
+## Data och dokumentation
 
-- Källregister: `data/sources.json`
-- Råpåståenden: `data/statements/*.jsonl`
-- Kompassbank: `data/question-bank.json`
+- Partiprogramkällor: `data/sources.json`
+- Programrådata: `data/statements/*.jsonl`
+- Program/canonical-bank: `data/question-bank.json`
+- Kuraterade riksdagsvoteringar: `data/riksdagen/votes.json`
+- Voteringsmetod: `docs/RIKSDAGEN_OPEN_DATA.md`
+- Övergripande metod: `docs/METHODOLOGY.md`
 - Datasetindex: `data/statements/index.json`
 - JSON Schema: `schema/statement.schema.json`
-- Metod: `docs/METHODOLOGY.md`
-
-## Källprincip
-
-För varje parti används det senaste officiella långsiktiga grundprogram som partiet självt publicerar. Partier använder olika dokumentnamn, därför accepteras **partiprogram**, **idéprogram** och **principprogram**. Valmanifest, valplattformar, budgetmotioner och löpande sakpolitiska webbsidor ingår inte i rådatasetet.
-
-Liberalernas program är antaget 2013 men den publicerade versionen innehåller landsmötesuppdateringar till och med 2023; datasetets L-rader är rebaserade mot den versionen.
 
 ## Test och validering
 
 ```bash
 python3 scripts/validate_dataset.py
+python3 scripts/validate_riksdagen_votes.py
 npm test
 node --check app.js
 node --check src/core.js
 ```
 
-Testerna verifierar bland annat att alla frågekällor finns i råmaterialet, att samma källrad inte skapar dubblettfrågor, att stöd och motstånd inte kodas samtidigt för samma parti, att dokumenterade plattityder och självrättfärdigande maximer inte kan återintroduceras och att urvalet balanserar täckning utan hårda partikvoter.
-
-Samma kontroller körs i GitHub Actions.
+CI kör samma kontroller vid pull requests och på `main`.
 
 ## Status
 
-- [x] Register över de åtta officiella grundprogrammen
-- [x] Källspårbart rådataset med 371 programrader
-- [x] Separat kvalitetsgrind mot plattityder och självklarheter
-- [x] Skärpt filter mot självrättfärdigande och abstrakta maximfrågor
-- [x] 99 unika politiskt diskriminerande sakfrågor
-- [x] Första lagret av gemensamma canonical-frågor mellan partier
-- [x] Explicit stöd-/motståndskodning där källorna är tydliga
-- [x] Täckningsbalanserad sampling utan tvingade partikvoter
-- [x] Partiblint frågeflöde och källvisning efter svar
-- [x] Källstödd sakfrågematchning
-- [x] Responsiv layout och lokal sessionsåterställning
-- [x] Regressionstester och CI
-- [ ] Andra systematiska genomläsningen för uttömmande täckningsaudit
-- [ ] Full canonical-kodning av samtliga åtta partier på varje relevant sakfråga
+- [x] Källspårbart programdataset
+- [x] Kvalitetsgrind mot plattityder och självrättfärdigande formuleringar
+- [x] Canonical-frågor som sammanför överlappande programpositioner
+- [x] Källstödd stöd-/motståndskodning
+- [x] Första kuraterade lagret av direkta riksdagsvoteringar
+- [x] Partikohesionsregel för voteringsdata
+- [x] Program/votering-sammanslagning utan dubbel vikt
+- [x] Ingestverktyg för Riksdagens öppna voteringsdataset
+- [x] Validatorer, tester och CI
+- [ ] Systematisk genomgång av alla relevanta sakvoteringar 2022–2026
+- [ ] Fullare canonical-kodning av alla åtta partier på varje relevant sakfråga
 - [ ] Kalibrering/viktning för en komplett traditionell valkompassmodell
 
-Den nuvarande appen är fullt körbar men redovisar öppet att positionsmatrisen fortfarande är partiell.
+Den publika banken är medvetet mindre än mängden tillgänglig rådata: frågekvalitet och korrekt parlamentarisk tolkning går före volym.
