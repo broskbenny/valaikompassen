@@ -20,7 +20,7 @@ const PARTY_NAMES = {
 };
 
 const TYPE_NAMES = { proposal: "Förslag", position: "Ställningstagande" };
-const STORAGE_KEY = "valaikompassen.session.v1";
+const STORAGE_KEY = "valaikompassen.session.v2";
 
 const state = {
   statements: [],
@@ -30,6 +30,8 @@ const state = {
   index: 0,
   sessionId: null,
   loaded: false,
+  rawStatementCount: 0,
+  questionBankVersion: null,
 };
 
 const $ = (selector) => document.querySelector(selector);
@@ -41,20 +43,40 @@ async function fetchText(path) {
   return response.text();
 }
 
+async function fetchJson(path) {
+  const response = await fetch(path, { cache: "no-store" });
+  if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
+  return response.json();
+}
+
 async function loadData() {
   try {
-    const [sourceResponse, ...statementTexts] = await Promise.all([
-      fetch("data/sources.json", { cache: "no-store" }).then((r) => {
-        if (!r.ok) throw new Error(`data/sources.json: HTTP ${r.status}`);
-        return r.json();
-      }),
+    const [sourceResponse, questionBank, ...statementTexts] = await Promise.all([
+      fetchJson("data/sources.json"),
+      fetchJson("data/question-bank.json"),
       ...PARTIES.map((party) => fetchText(`data/statements/${party}.jsonl`)),
     ]);
 
+    const rawStatements = statementTexts
+      .flatMap(parseJsonLines)
+      .filter((row) => row.review?.status !== "rejected");
+    const rawById = new Map(rawStatements.map((row) => [row.id, row]));
+    const approvedIds = PARTIES.flatMap((party) => questionBank.question_ids_by_party?.[party] || []);
+    const missingIds = approvedIds.filter((id) => !rawById.has(id));
+
+    if (missingIds.length) {
+      throw new Error(`Frågebanken hänvisar till saknade källrader: ${missingIds.join(", ")}`);
+    }
+    if (new Set(approvedIds).size !== approvedIds.length) {
+      throw new Error("Frågebanken innehåller dubbla statement-id:n.");
+    }
+
     state.sources = sourceResponse.sources || [];
-    state.statements = statementTexts.flatMap(parseJsonLines).filter((row) => row.review?.status !== "rejected");
+    state.rawStatementCount = rawStatements.length;
+    state.questionBankVersion = questionBank.version || null;
+    state.statements = approvedIds.map((id) => rawById.get(id));
     state.loaded = true;
-    $("#load-status").textContent = `${state.statements.length} källspårade ställningstaganden laddade.`;
+    $("#load-status").textContent = `${state.statements.length} handgranskade kompassfrågor laddade från ${state.rawStatementCount} källspårade programrader.`;
     $("#start-button").disabled = false;
     renderSourceList();
     offerResume();
@@ -74,7 +96,8 @@ function setView(name) {
 function saveSession() {
   if (!state.sessionId || !state.questions.length) return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    version: 1,
+    version: 2,
+    questionBankVersion: state.questionBankVersion,
     sessionId: state.sessionId,
     questionIds: state.questions.map((q) => q.id),
     answers: state.answers,

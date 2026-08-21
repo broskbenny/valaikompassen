@@ -24,7 +24,7 @@
     <section id="start-view" class="view hero-view" aria-labelledby="start-title">
       <p class="eyebrow">Riksdagsvalet 2026</p>
       <h1 id="start-title">Tyck om sakpolitiken<br><span>innan du ser partiet.</span></h1>
-      <p class="lead">Du får korta påståenden hämtade ur de åtta riksdagspartiernas senaste långsiktiga parti-, idé- eller principprogram. Partiet bakom påståendet hålls dolt medan du svarar.</p>
+      <p class="lead">Du får konkreta politiska vägval hämtade ur de åtta riksdagspartiernas senaste långsiktiga parti-, idé- eller principprogram. Allmänna mål och plattityder sorteras bort, och partiet bakom påståendet hålls dolt medan du svarar.</p>
 
       <div class="start-grid">
         <div class="start-card">
@@ -48,8 +48,8 @@
         </div>
 
         <aside class="method-card" aria-label="Så fungerar det">
-          <div><span class="method-number">01</span><p>Ett påstående i taget. Ingen partilogga.</p></div>
-          <div><span class="method-number">02</span><p>Svara mycket dåligt, dåligt, bra, mycket bra eller vet ej.</p></div>
+          <div><span class="method-number">01</span><p>Bara frågor med ett konkret politiskt vägval och en rimlig motposition.</p></div>
+          <div><span class="method-number">02</span><p>Ett påstående i taget. Ingen partilogga förrän du har svarat.</p></div>
           <div><span class="method-number">03</span><p>Resultatet visar hur väl du gillar varje partis egna programskrivningar.</p></div>
         </aside>
       </div>
@@ -119,9 +119,10 @@
         </article>
         <article>
           <h2>Från program till fråga</h2>
-          <p>Historik, problembeskrivningar och ren retorik filtreras bort. Kvar blir korta parafraser av konkreta förslag och tydliga ställningstaganden. Varje datapost sparar dokument, sida och avsnitt.</p>
+          <p>Först extraheras källspårade förslag och ställningstaganden. Därefter görs en separat kompassgranskning. En rad får bara bli fråga om den innehåller ett konkret politiskt val och det finns en rimlig seriös motposition. Formuleringar som bara säger att skolan ska vara bra, vården hålla hög kvalitet eller samhället vara tryggt stannar i råmaterialet och visas inte i kompassen.</p>
+          <p>Typiska godkända frågor gäller exempelvis förbud och tillstånd, skatter och utgifter, ägar- och huvudmannaskap, rättigheter och skyldigheter, kvalificeringskrav, konkreta mål eller institutionella förändringar. Frågebanken finns öppet i <code>data/question-bank.json</code>.</p>
           <h2>Urvalet i en omgång</h2>
-          <p>Frågorna slumpas, men inte helt naivt. Varje parti får lika många frågor och algoritmen försöker sprida dem över flera ämnesområden. Det minskar risken att ett långt eller detaljrikt program dominerar.</p>
+          <p>Frågorna slumpas ur den särskilt handgranskade frågebanken, inte ur alla extraherade programrader. Varje parti får lika många frågor och algoritmen försöker sprida dem över flera ämnesområden. Det minskar både plattityder och risken att ett långt eller detaljrikt program dominerar.</p>
           <h2>Poängen</h2>
           <p>Mycket dåligt = −2, dåligt = −1, bra = +1 och mycket bra = +2. “Vet ej” räknas inte in. Medelvärdet per parti skalas sedan till 0–100. Resultatet visar därför hur positiv du varit till ett partis egna programskrivningar.</p>
           <h2>Nästa metodlager</h2>
