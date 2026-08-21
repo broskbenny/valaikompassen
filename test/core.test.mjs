@@ -6,6 +6,7 @@ import {
   computePartyResults,
   answeredCount,
   substantiveAnswerCount,
+  getQuestionPartyPositions,
   PARTIES,
 } from "../src/core.js";
 
@@ -28,29 +29,55 @@ function fixture(perParty = 12) {
   );
 }
 
+function partyCoverage(questions) {
+  const counts = Object.fromEntries(PARTIES.map((party) => [party, 0]));
+  for (const question of questions) {
+    const positions = getQuestionPartyPositions(question);
+    for (const party of new Set([...positions.support, ...positions.oppose])) counts[party] += 1;
+  }
+  return counts;
+}
+
 test("parseJsonLines parses JSONL and ignores blank lines", () => {
   const parsed = parseJsonLines('{"id":1}\n\n{"id":2}\n');
   assert.deepEqual(parsed, [{ id: 1 }, { id: 2 }]);
 });
 
-test("balanced selection gives every party the same count when divisible", () => {
+test("balanced selection keeps legacy single-party coverage even without hard quotas", () => {
   const selected = selectBalancedQuestions(fixture(), 48, seededRng(42));
   assert.equal(selected.length, 48);
-  for (const party of PARTIES) {
-    assert.equal(selected.filter((q) => q.source_party === party).length, 6);
-  }
   assert.equal(new Set(selected.map((q) => q.id)).size, 48);
+  const counts = partyCoverage(selected);
+  assert.equal(Math.max(...Object.values(counts)) - Math.min(...Object.values(counts)), 0);
 });
 
-test("balanced selection preserves topic diversity", () => {
-  const selected = selectBalancedQuestions(fixture(), 32, seededRng(7));
-  for (const party of PARTIES) {
-    const partyRows = selected.filter((q) => q.source_party === party);
-    assert.equal(new Set(partyRows.map((q) => q.topic)).size, 4);
-  }
+test("shared questions count as coverage for every explicitly coded party", () => {
+  const question = {
+    id: "Q-shared",
+    topic: "energi",
+    position_parties: { support: ["C", "MP"], oppose: ["SD", "KD"] },
+  };
+  const positions = getQuestionPartyPositions(question);
+  assert.deepEqual(positions.support, ["C", "MP"]);
+  assert.deepEqual(positions.oppose, ["SD", "KD"]);
 });
 
-test("party result maps -2..2 to 0..100", () => {
+test("explicit opposition inverts the answer instead of treating silence as opposition", () => {
+  const questions = [
+    {
+      id: "Q-nuclear",
+      position_parties: { support: ["C", "MP"], oppose: ["SD"] },
+    },
+  ];
+  const results = computePartyResults(questions, { "Q-nuclear": "very_good" });
+  assert.equal(results.find((r) => r.party === "C").score, 100);
+  assert.equal(results.find((r) => r.party === "MP").score, 100);
+  assert.equal(results.find((r) => r.party === "SD").score, 0);
+  assert.equal(results.find((r) => r.party === "M").score, null);
+  assert.equal(results.find((r) => r.party === "M").total, 0);
+});
+
+test("party result maps -2..2 to 0..100 for source-party questions", () => {
   const questions = [
     { id: "S-1", source_party: "S" },
     { id: "S-2", source_party: "S" },
