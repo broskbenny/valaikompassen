@@ -20,7 +20,7 @@ const PARTY_NAMES = {
 };
 
 const TYPE_NAMES = { proposal: "Förslag", position: "Ställningstagande" };
-const STORAGE_KEY = "valaikompassen.session.v2";
+const STORAGE_KEY = "valaikompassen.session.v3";
 
 const state = {
   statements: [],
@@ -49,6 +49,69 @@ async function fetchJson(path) {
   return response.json();
 }
 
+function unique(values) {
+  return [...new Set(values)];
+}
+
+function buildQuestionBank(questionBank, rawStatements) {
+  const rawById = new Map(rawStatements.map((row) => [row.id, row]));
+  const singletonIds = questionBank.singleton_ids || [];
+  const canonicalQuestions = questionBank.canonical_questions || [];
+  const referencedIds = [
+    ...singletonIds,
+    ...canonicalQuestions.flatMap((question) => [
+      ...(question.positions?.support || []),
+      ...(question.positions?.oppose || []),
+    ]),
+  ];
+  const missingIds = unique(referencedIds.filter((id) => !rawById.has(id)));
+
+  if (missingIds.length) {
+    throw new Error(`Frågebanken hänvisar till saknade källrader: ${missingIds.join(", ")}`);
+  }
+  if (new Set(singletonIds).size !== singletonIds.length) {
+    throw new Error("Frågebanken innehåller dubbla singleton-id:n.");
+  }
+  if (new Set(canonicalQuestions.map((question) => question.id)).size !== canonicalQuestions.length) {
+    throw new Error("Frågebanken innehåller dubbla canonical-id:n.");
+  }
+
+  const singletonQuestions = singletonIds.map((id) => {
+    const row = rawById.get(id);
+    const override = questionBank.overrides?.[id] || {};
+    return {
+      id,
+      statement: override.statement || row.statement,
+      topic: override.topic || row.topic,
+      type: override.type || row.type,
+      position_sources: { support: [row], oppose: [] },
+      position_parties: { support: [row.source_party], oppose: [] },
+    };
+  });
+
+  const mergedQuestions = canonicalQuestions.map((question) => {
+    const supportRows = (question.positions?.support || []).map((id) => rawById.get(id));
+    const opposeRows = (question.positions?.oppose || []).map((id) => rawById.get(id));
+    const supportParties = unique(supportRows.map((row) => row.source_party));
+    const opposeParties = unique(opposeRows.map((row) => row.source_party));
+    const overlap = supportParties.filter((party) => opposeParties.includes(party));
+    if (overlap.length) {
+      throw new Error(`${question.id} kodar samma parti på båda sidor: ${overlap.join(", ")}`);
+    }
+
+    return {
+      id: question.id,
+      statement: question.statement,
+      topic: question.topic,
+      type: question.type || "position",
+      position_sources: { support: supportRows, oppose: opposeRows },
+      position_parties: { support: supportParties, oppose: opposeParties },
+    };
+  });
+
+  return [...singletonQuestions, ...mergedQuestions];
+}
+
 async function loadData() {
   try {
     const [sourceResponse, questionBank, ...statementTexts] = await Promise.all([
@@ -60,23 +123,13 @@ async function loadData() {
     const rawStatements = statementTexts
       .flatMap(parseJsonLines)
       .filter((row) => row.review?.status !== "rejected");
-    const rawById = new Map(rawStatements.map((row) => [row.id, row]));
-    const approvedIds = PARTIES.flatMap((party) => questionBank.question_ids_by_party?.[party] || []);
-    const missingIds = approvedIds.filter((id) => !rawById.has(id));
-
-    if (missingIds.length) {
-      throw new Error(`Frågebanken hänvisar till saknade källrader: ${missingIds.join(", ")}`);
-    }
-    if (new Set(approvedIds).size !== approvedIds.length) {
-      throw new Error("Frågebanken innehåller dubbla statement-id:n.");
-    }
 
     state.sources = sourceResponse.sources || [];
     state.rawStatementCount = rawStatements.length;
     state.questionBankVersion = questionBank.version || null;
-    state.statements = approvedIds.map((id) => rawById.get(id));
+    state.statements = buildQuestionBank(questionBank, rawStatements);
     state.loaded = true;
-    $("#load-status").textContent = `${state.statements.length} handgranskade kompassfrågor laddade från ${state.rawStatementCount} källspårade programrader.`;
+    $("#load-status").textContent = `${state.statements.length} unika, handgranskade sakfrågor laddade från ${state.rawStatementCount} källspårade programrader.`;
     $("#start-button").disabled = false;
     renderSourceList();
     offerResume();
@@ -96,7 +149,7 @@ function setView(name) {
 function saveSession() {
   if (!state.sessionId || !state.questions.length) return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    version: 2,
+    version: 3,
     questionBankVersion: state.questionBankVersion,
     sessionId: state.sessionId,
     questionIds: state.questions.map((q) => q.id),
@@ -117,7 +170,10 @@ function readSavedSession() {
 
 function offerResume() {
   const saved = readSavedSession();
-  const canResume = saved?.questionIds?.length && saved.questionIds.some((id) => state.statements.some((q) => q.id === id));
+  const canResume = saved?.version === 3
+    && saved?.questionBankVersion === state.questionBankVersion
+    && saved?.questionIds?.length
+    && saved.questionIds.some((id) => state.statements.some((q) => q.id === id));
   $("#resume-button").classList.toggle("hidden", !canResume);
 }
 
@@ -135,7 +191,7 @@ function startSession() {
 
 function resumeSession() {
   const saved = readSavedSession();
-  if (!saved) return;
+  if (!saved || saved.questionBankVersion !== state.questionBankVersion) return;
   const byId = new Map(state.statements.map((q) => [q.id, q]));
   state.questions = saved.questionIds.map((id) => byId.get(id)).filter(Boolean);
   state.answers = saved.answers || {};
@@ -169,24 +225,52 @@ function renderQuestion() {
   const summary = details.querySelector("summary");
   details.open = false;
   details.classList.toggle("locked", !answered);
-  summary.textContent = answered ? "Visa källan" : "Visa källan efter att jag svarat";
+  summary.textContent = answered ? "Visa källor och partier" : "Visa källor efter att jag svarat";
   summary.tabIndex = answered ? 0 : -1;
   summary.setAttribute("aria-disabled", answered ? "false" : "true");
   renderQuestionSource(question);
 }
 
+function renderSourceRows(rows, heading) {
+  if (!rows?.length) return "";
+  return `
+    <div class="source-position-group">
+      <h3>${escapeHtml(heading)}</h3>
+      ${rows.map((row) => {
+        const source = state.sources.find((item) => item.document_id === row.source?.document_id);
+        if (!source) return "";
+        const page = row.source?.pdf_page ? `, PDF-sida ${row.source.pdf_page}` : "";
+        const section = row.source?.section ? ` · ${row.source.section}` : "";
+        return `
+          <div class="source-item">
+            <strong>${escapeHtml(source.party_name)}</strong>
+            <p>${escapeHtml(row.statement)}</p>
+            <small>${escapeHtml(source.title)}${escapeHtml(page)}${escapeHtml(section)}</small><br>
+            <a href="${escapeAttribute(source.url)}" target="_blank" rel="noreferrer">Öppna originaldokumentet ↗</a>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
 function renderQuestionSource(question) {
-  const source = state.sources.find((item) => item.document_id === question.source?.document_id);
-  if (!source) {
+  const supportRows = question.position_sources?.support || [];
+  const opposeRows = question.position_sources?.oppose || [];
+  if (!supportRows.length && !opposeRows.length) {
     $("#source-content").textContent = "Källuppgift saknas.";
     return;
   }
-  const page = question.source?.pdf_page ? `, PDF-sida ${question.source.pdf_page}` : "";
-  const section = question.source?.section ? ` · ${question.source.section}` : "";
+
+  const sourceCount = supportRows.length + opposeRows.length;
+  const intro = sourceCount > 1
+    ? "Frågan sammanför en gemensam sakpolitisk kärna. De källnära parafraserna nedan visar respektive partis nyans."
+    : "Källnära parafras och originalkälla:";
+
   $("#source-content").innerHTML = `
-    <strong>${escapeHtml(source.party_name)}</strong><br>
-    ${escapeHtml(source.title)}${escapeHtml(page)}${escapeHtml(section)}<br>
-    <a href="${escapeAttribute(source.url)}" target="_blank" rel="noreferrer">Öppna originaldokumentet ↗</a>
+    <p>${escapeHtml(intro)}</p>
+    ${renderSourceRows(supportRows, "Stödjer påståendet")}
+    ${renderSourceRows(opposeRows, "Motsätter sig påståendet")}
   `;
 }
 
@@ -220,7 +304,7 @@ function showResults() {
   const substantive = substantiveAnswerCount(state.questions, state.answers);
   const results = computePartyResults(state.questions, state.answers);
 
-  $("#results-summary").textContent = `Du besvarade ${answered} av ${state.questions.length} frågor. ${substantive} svar räknas in i poängen; “vet ej” påverkar inte resultatet.`;
+  $("#results-summary").textContent = `Du besvarade ${answered} av ${state.questions.length} frågor. ${substantive} svar räknas in; “vet ej” påverkar inte resultatet. Ett svar kan räknas för flera partier när deras program uttryckligen intar samma ståndpunkt.`;
   $("#results-list").innerHTML = results.map((result, i) => {
     const score = result.score ?? 0;
     const scoreLabel = result.score === null ? "–" : String(result.score);
@@ -229,7 +313,7 @@ function showResults() {
         <div class="result-rank">${i + 1}</div>
         <div class="result-party">
           <strong>${escapeHtml(PARTY_NAMES[result.party])}</strong>
-          <small>${result.answered}/${result.total} bedömda · säkerhet ${result.confidence}</small>
+          <small>${result.answered}/${result.total} källkodade positioner bedömda</small>
         </div>
         <div class="score-track" aria-label="${scoreLabel} av 100"><div class="score-fill" style="width:${score}%"></div></div>
         <div class="result-score">${scoreLabel}</div>
@@ -262,7 +346,8 @@ function showError(message) {
 }
 
 function escapeHtml(value = "") {
-  return String(value).replace(/[&<>\"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '\"': "&quot;" }[char]));
+  const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" };
+  return String(value).replace(/[&<>\"]/g, (char) => entities[char]);
 }
 function escapeAttribute(value = "") { return escapeHtml(value); }
 
