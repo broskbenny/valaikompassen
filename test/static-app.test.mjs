@@ -15,18 +15,29 @@ test("app has all required views and answer options", () => {
   }
 });
 
-test("app loads the source corpus through the explicit question allowlist", () => {
+test("app builds displayed questions from singleton and canonical source coding", () => {
   assert.match(app, /PARTIES\.map\(\(party\) => fetchText\(`data\/statements\/\$\{party\}\.jsonl`\)\)/);
   assert.match(app, /data\/sources\.json/);
   assert.match(app, /data\/question-bank\.json/);
-  assert.match(app, /question_ids_by_party/);
-  assert.match(app, /approvedIds\.map\(\(id\) => rawById\.get\(id\)\)/);
+  assert.match(app, /singleton_ids/);
+  assert.match(app, /canonical_questions/);
+  assert.match(app, /buildQuestionBank/);
+  assert.match(app, /position_parties/);
 });
 
-test("party source stays gated until the current question is answered", () => {
+test("party sources stay gated and multiple source positions are revealed only after answering", () => {
   assert.match(app, /summary\.tabIndex = answered \? 0 : -1/);
   assert.match(app, /!state\.answers\[current\.id\]/);
   assert.match(app, /event\.currentTarget\.open = false/);
+  assert.match(app, /Stödjer påståendet/);
+  assert.match(app, /Motsätter sig påståendet/);
+});
+
+test("old equal-per-party promise is removed from the UI", () => {
+  assert.doesNotMatch(html, /3 per parti/);
+  assert.doesNotMatch(html, /6 per parti/);
+  assert.doesNotMatch(html, /10 per parti/);
+  assert.match(html, /tvingar inte fram exakt lika många frågor per parti/);
 });
 
 test("responsive and reduced-motion CSS are present", () => {

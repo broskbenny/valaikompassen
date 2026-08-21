@@ -1,149 +1,296 @@
 {
-  "version": "0.2.0",
+  "version": "0.3.0",
   "updated": "2026-08-21",
-  "purpose": "compass_question_allowlist",
-  "quality_rule": "Only statements with a concrete political choice and a plausible serious counter-position are exposed as compass questions. Broad goals, virtues and platitudes remain in the source corpus but are excluded here.",
-  "minimum_questions_per_party": 10,
+  "purpose": "canonical_compass_question_bank",
+  "quality_rule": "Only concrete political choices with a plausible serious counter-position are shown. Self-justifying qualifiers such as 'better', 'necessary', 'effective' or broad positive goals are excluded unless the disputed instrument is explicit.",
+  "merge_rule": "Semantically equivalent positions are asked once. A canonical question may have several source-backed party positions. Important differences remain separate; source-specific paraphrases are shown after the answer.",
+  "scoring_rule": "Each answer is scored only for parties with an explicit source-backed position on that question. Support uses the answer value; explicit opposition uses the inverted value. Silence is never treated as opposition.",
   "excluded_regressions": {
-    "M-2021-031": "Broad positive goal (quality/access/choice in healthcare), not a sufficiently discriminating political choice.",
-    "S-2025-002": "Broad rule-of-law value without a concrete disputed policy instrument."
+    "M-2021-009": "Abstract subsidiarity maxim with the conclusion built into 'lika bra eller bättre'.",
+    "M-2021-031": "Broad positive goal combining quality, accessibility and choice rather than a single disputed instrument.",
+    "M-2021-004": "Uses the positively loaded and unspecific standard 'stränga straff' without a concrete level or change.",
+    "M-2021-032": "Subsidiarity phrasing depends on the self-justifying condition that member states can handle the task themselves.",
+    "M-2021-034": "Lists broadly positive aid objectives rather than a sufficiently sharp policy trade-off.",
+    "S-2025-002": "Broad rule-of-law value without a concrete disputed policy instrument.",
+    "V-2024-055": "Conditional EU-exit formulation depends on the undefined value judgement 'progressiv politik'."
   },
-  "question_ids_by_party": {
-    "S": [
-      "S-2025-001",
-      "S-2025-003",
-      "S-2025-009",
-      "S-2025-012",
-      "S-2025-018",
-      "S-2025-024",
-      "S-2025-026",
-      "S-2025-030",
-      "S-2025-036",
-      "S-2025-037",
-      "S-2025-038",
-      "S-2025-040",
-      "S-2025-043",
-      "S-2025-044",
-      "S-2025-052",
-      "S-2025-053"
-    ],
-    "M": [
-      "M-2021-004",
-      "M-2021-006",
-      "M-2021-009",
-      "M-2021-018",
-      "M-2021-021",
-      "M-2021-022",
-      "M-2021-026",
-      "M-2021-029",
-      "M-2021-032",
-      "M-2021-034"
-    ],
-    "SD": [
-      "SD-2023-001",
-      "SD-2023-004",
-      "SD-2023-011",
-      "SD-2023-013",
-      "SD-2023-014",
-      "SD-2023-020",
-      "SD-2023-025",
-      "SD-2023-027",
-      "SD-2023-029",
-      "SD-2023-035",
-      "SD-2023-038",
-      "SD-2023-039",
-      "SD-2023-040",
-      "SD-2023-043"
-    ],
-    "C": [
-      "C-2013-002",
-      "C-2013-005",
-      "C-2013-009",
-      "C-2013-015",
-      "C-2013-017",
-      "C-2013-020",
-      "C-2013-024",
-      "C-2013-025",
-      "C-2013-026",
-      "C-2013-028",
-      "C-2013-030",
-      "C-2013-036",
-      "C-2013-037",
-      "C-2013-040",
-      "C-2013-041"
-    ],
-    "V": [
-      "V-2024-005",
-      "V-2024-006",
-      "V-2024-009",
-      "V-2024-012",
-      "V-2024-014",
-      "V-2024-015",
-      "V-2024-019",
-      "V-2024-021",
-      "V-2024-022",
-      "V-2024-023",
-      "V-2024-027",
-      "V-2024-032",
-      "V-2024-040",
-      "V-2024-041",
-      "V-2024-043",
-      "V-2024-049",
-      "V-2024-055"
-    ],
-    "KD": [
-      "KD-2025-001",
-      "KD-2025-003",
-      "KD-2025-004",
-      "KD-2025-021",
-      "KD-2025-026",
-      "KD-2025-031",
-      "KD-2025-032",
-      "KD-2025-034",
-      "KD-2025-037",
-      "KD-2025-038",
-      "KD-2025-039",
-      "KD-2025-040",
-      "KD-2025-042"
-    ],
-    "MP": [
-      "MP-2025-003",
-      "MP-2025-006",
-      "MP-2025-007",
-      "MP-2025-008",
-      "MP-2025-013",
-      "MP-2025-014",
-      "MP-2025-022",
-      "MP-2025-026",
-      "MP-2025-027",
-      "MP-2025-032",
-      "MP-2025-033",
-      "MP-2025-035",
-      "MP-2025-036",
-      "MP-2025-038",
-      "MP-2025-041",
-      "MP-2025-043",
-      "MP-2025-045",
-      "MP-2025-049"
-    ],
-    "L": [
-      "L-2023-003",
-      "L-2023-008",
-      "L-2023-010",
-      "L-2023-020",
-      "L-2023-021",
-      "L-2023-023",
-      "L-2023-024",
-      "L-2023-026",
-      "L-2023-028",
-      "L-2023-029",
-      "L-2023-031",
-      "L-2023-033",
-      "L-2023-035",
-      "L-2023-043",
-      "L-2023-045",
-      "L-2023-046",
-      "L-2023-049"
-    ]
-  }
+  "singleton_ids": [
+    "S-2025-001",
+    "S-2025-003",
+    "S-2025-009",
+    "S-2025-012",
+    "S-2025-018",
+    "S-2025-024",
+    "S-2025-026",
+    "S-2025-030",
+    "S-2025-036",
+    "S-2025-038",
+    "S-2025-040",
+    "S-2025-044",
+    "S-2025-053",
+    "M-2021-006",
+    "M-2021-018",
+    "M-2021-021",
+    "M-2021-022",
+    "SD-2023-001",
+    "SD-2023-011",
+    "SD-2023-013",
+    "SD-2023-014",
+    "SD-2023-038",
+    "SD-2023-039",
+    "SD-2023-040",
+    "SD-2023-043",
+    "C-2013-005",
+    "C-2013-015",
+    "C-2013-017",
+    "C-2013-020",
+    "C-2013-024",
+    "C-2013-026",
+    "C-2013-028",
+    "C-2013-030",
+    "C-2013-040",
+    "C-2013-041",
+    "V-2024-005",
+    "V-2024-006",
+    "V-2024-009",
+    "V-2024-012",
+    "V-2024-021",
+    "V-2024-023",
+    "V-2024-027",
+    "V-2024-032",
+    "V-2024-041",
+    "V-2024-049",
+    "KD-2025-001",
+    "KD-2025-004",
+    "KD-2025-021",
+    "KD-2025-026",
+    "KD-2025-031",
+    "KD-2025-032",
+    "KD-2025-034",
+    "KD-2025-037",
+    "KD-2025-038",
+    "KD-2025-040",
+    "MP-2025-003",
+    "MP-2025-007",
+    "MP-2025-008",
+    "MP-2025-013",
+    "MP-2025-014",
+    "MP-2025-022",
+    "MP-2025-027",
+    "MP-2025-032",
+    "MP-2025-033",
+    "MP-2025-035",
+    "MP-2025-036",
+    "MP-2025-038",
+    "L-2023-008",
+    "L-2023-010",
+    "L-2023-020",
+    "L-2023-023",
+    "L-2023-024",
+    "L-2023-026",
+    "L-2023-028",
+    "L-2023-029",
+    "L-2023-031",
+    "L-2023-035",
+    "L-2023-043",
+    "L-2023-045",
+    "L-2023-046",
+    "L-2023-049"
+  ],
+  "overrides": {
+    "M-2021-006": {
+      "statement": "Sverige ska vara fullvärdig medlem i Nato.",
+      "topic": "försvar"
+    },
+    "MP-2025-027": {
+      "statement": "Skademinskning ska vara ett uttalat mål i beroendevården.",
+      "topic": "sjukvård"
+    },
+    "L-2023-033": {
+      "statement": "Patienter ska ha lagstadgad rätt att välja mellan offentliga och privata vårdgivare.",
+      "topic": "sjukvård"
+    }
+  },
+  "canonical_questions": [
+    {
+      "id": "Q-state-school",
+      "statement": "Staten ska ta över huvudansvaret för den offentliga skolan från kommunerna.",
+      "topic": "utbildning",
+      "type": "proposal",
+      "positions": {
+        "support": ["SD-2023-029", "V-2024-014", "L-2023-003"],
+        "oppose": []
+      }
+    },
+    {
+      "id": "Q-school-choice",
+      "statement": "Elever och föräldrar ska ha rätt att välja skola.",
+      "topic": "utbildning",
+      "type": "position",
+      "positions": {
+        "support": ["M-2021-026", "C-2013-009"],
+        "oppose": ["V-2024-016"]
+      }
+    },
+    {
+      "id": "Q-constitutional-court",
+      "statement": "Sverige ska ha en författningsdomstol.",
+      "topic": "demokrati",
+      "type": "proposal",
+      "positions": {
+        "support": ["C-2013-002", "KD-2025-003"],
+        "oppose": []
+      }
+    },
+    {
+      "id": "Q-nuclear-free",
+      "statement": "Sverige ska på sikt ha ett energisystem utan kärnkraft.",
+      "topic": "energi",
+      "type": "position",
+      "positions": {
+        "support": ["C-2013-025", "MP-2025-006"],
+        "oppose": ["SD-2023-037", "KD-2025-042"]
+      }
+    },
+    {
+      "id": "Q-strandskydd-ease",
+      "statement": "Strandskyddet ska lättas så att fler sjönära områden kan bebyggas.",
+      "topic": "bostäder",
+      "type": "proposal",
+      "positions": {
+        "support": ["C-2013-036", "KD-2025-039"],
+        "oppose": []
+      }
+    },
+    {
+      "id": "Q-permanent-residence",
+      "statement": "Permanenta uppehållstillstånd ska vara huvudregel för personer som får stanna i Sverige.",
+      "topic": "migration",
+      "type": "proposal",
+      "positions": {
+        "support": ["V-2024-043", "MP-2025-049"],
+        "oppose": ["SD-2023-004"]
+      }
+    },
+    {
+      "id": "Q-arms-export-dictators",
+      "statement": "Sverige ska inte exportera vapen till diktaturer eller länder där allvarliga människorättskränkningar förekommer.",
+      "topic": "utrikespolitik",
+      "type": "proposal",
+      "positions": {
+        "support": ["V-2024-048", "MP-2025-043"],
+        "oppose": []
+      }
+    },
+    {
+      "id": "Q-nuclear-weapons-sweden",
+      "statement": "Kärnvapen ska inte få placeras på svenskt territorium.",
+      "topic": "försvar",
+      "type": "position",
+      "positions": {
+        "support": ["S-2025-052", "V-2024-051", "MP-2025-040"],
+        "oppose": []
+      }
+    },
+    {
+      "id": "Q-civil-duty",
+      "statement": "Civilplikt ska användas som en del av Sveriges totalförsvar.",
+      "topic": "försvar",
+      "type": "proposal",
+      "positions": {
+        "support": ["S-2025-051", "SD-2023-035", "MP-2025-042"],
+        "oppose": []
+      }
+    },
+    {
+      "id": "Q-abortion-constitution",
+      "statement": "Rätten till abort ska skyddas i grundlagen.",
+      "topic": "rättigheter",
+      "type": "proposal",
+      "positions": {
+        "support": ["V-2024-040", "L-2023-034"],
+        "oppose": []
+      }
+    },
+    {
+      "id": "Q-elected-regions",
+      "statement": "Direkt folkvalda regioner ska ha ansvar för fler regionala samhällsuppgifter.",
+      "topic": "regionalpolitik",
+      "type": "proposal",
+      "positions": {
+        "support": ["C-2013-037", "L-2023-048"],
+        "oppose": []
+      }
+    },
+    {
+      "id": "Q-labor-migration-needs",
+      "statement": "Arbetskraftsinvandringen ska vara behovsstyrd.",
+      "topic": "migration",
+      "type": "proposal",
+      "positions": {
+        "support": ["S-2025-043", "SD-2023-025", "V-2024-004"],
+        "oppose": []
+      }
+    },
+    {
+      "id": "Q-foreign-bases",
+      "statement": "Sverige ska inte ha permanenta utländska militärbaser på sitt territorium.",
+      "topic": "försvar",
+      "type": "position",
+      "positions": {
+        "support": ["V-2024-050", "MP-2025-041"],
+        "oppose": []
+      }
+    },
+    {
+      "id": "Q-no-euro",
+      "statement": "Sverige ska inte införa euron.",
+      "topic": "EU",
+      "type": "position",
+      "positions": {
+        "support": ["SD-2023-020", "V-2024-054", "MP-2025-045"],
+        "oppose": []
+      }
+    },
+    {
+      "id": "Q-eu-rule-of-law-sanctions",
+      "statement": "EU ska kunna dra in ekonomiskt stöd eller rösträtt för medlemsländer som systematiskt bryter mot demokrati och rättsstat.",
+      "topic": "EU",
+      "type": "proposal",
+      "positions": {
+        "support": ["L-2023-050", "MP-2025-046"],
+        "oppose": []
+      }
+    },
+    {
+      "id": "Q-dental-healthcare",
+      "statement": "Tandvård ska finansieras enligt samma principer som övrig sjukvård.",
+      "topic": "sjukvård",
+      "type": "proposal",
+      "positions": {
+        "support": ["S-2025-037", "V-2024-022", "MP-2025-026"],
+        "oppose": []
+      }
+    },
+    {
+      "id": "Q-private-healthcare",
+      "statement": "Privata vårdgivare ska få bedriva skattefinansierad sjukvård.",
+      "topic": "sjukvård",
+      "type": "position",
+      "positions": {
+        "support": ["SD-2023-027", "L-2023-033"],
+        "oppose": ["V-2024-019"]
+      }
+    },
+    {
+      "id": "Q-friskolor",
+      "statement": "Fristående skolor ska få finnas som alternativ till offentliga skolor.",
+      "topic": "utbildning",
+      "type": "position",
+      "positions": {
+        "support": ["SD-2023-030"],
+        "oppose": ["V-2024-015"]
+      }
+    }
+  ]
 }

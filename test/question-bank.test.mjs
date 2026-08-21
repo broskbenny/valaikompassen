@@ -15,40 +15,73 @@ const rawRows = (
 ).flat();
 
 const rawById = new Map(rawRows.map((row) => [row.id, row]));
-const approvedIds = PARTIES.flatMap((party) => bank.question_ids_by_party?.[party] || []);
+const canonical = bank.canonical_questions || [];
+const singletonIds = bank.singleton_ids || [];
+const canonicalSourceIds = canonical.flatMap((question) => [
+  ...(question.positions?.support || []),
+  ...(question.positions?.oppose || []),
+]);
+const usedSourceIds = [...singletonIds, ...canonicalSourceIds];
 
-test("question bank is an explicit, unique allowlist with enough depth per party", () => {
-  assert.equal(bank.purpose, "compass_question_allowlist");
-  assert.equal(new Set(approvedIds).size, approvedIds.length);
-  assert.ok(approvedIds.length >= 100, "question bank should stay broad while remaining selective");
+test("v0.3 question bank contains unique displayed questions and valid source rows", () => {
+  assert.equal(bank.purpose, "canonical_compass_question_bank");
+  assert.equal(bank.version, "0.3.0");
+  assert.equal(singletonIds.length + canonical.length, 99);
+  assert.ok(singletonIds.length + canonical.length >= 80, "deep mode needs at least 80 unique questions");
+  assert.equal(new Set(singletonIds).size, singletonIds.length);
+  assert.equal(new Set(canonical.map((question) => question.id)).size, canonical.length);
+  assert.equal(new Set(usedSourceIds).size, usedSourceIds.length, "a source row should not create duplicate displayed questions");
 
-  for (const party of PARTIES) {
-    const ids = bank.question_ids_by_party?.[party] || [];
-    assert.ok(
-      ids.length >= bank.minimum_questions_per_party,
-      `${party} needs at least ${bank.minimum_questions_per_party} approved questions`,
-    );
-    for (const id of ids) {
-      const row = rawById.get(id);
-      assert.ok(row, `${id} must reference an existing raw statement`);
-      assert.equal(row.source_party, party, `${id} must remain assigned to ${party}`);
-      assert.notEqual(row.review?.status, "rejected", `${id} cannot reference a rejected source row`);
+  for (const id of usedSourceIds) {
+    const row = rawById.get(id);
+    assert.ok(row, `${id} must reference an existing raw statement`);
+    assert.notEqual(row.review?.status, "rejected", `${id} cannot reference a rejected source row`);
+  }
+});
+
+test("canonical questions merge equivalent sources but keep support and opposition explicit", () => {
+  assert.ok(canonical.length >= 15);
+  assert.ok(canonical.some((question) => (question.positions?.support || []).length >= 2));
+  assert.ok(canonical.some((question) => (question.positions?.oppose || []).length >= 1));
+
+  for (const question of canonical) {
+    assert.match(question.id, /^Q-/);
+    assert.ok(question.statement?.length >= 8);
+    assert.ok(question.topic?.length >= 2);
+    const supportParties = new Set((question.positions?.support || []).map((id) => rawById.get(id)?.source_party));
+    const opposeParties = new Set((question.positions?.oppose || []).map((id) => rawById.get(id)?.source_party));
+    for (const party of supportParties) {
+      assert.ok(!opposeParties.has(party), `${question.id} cannot code ${party} on both sides`);
     }
   }
 });
 
-test("known platitudes are excluded from compass use", () => {
+test("known platitudes and self-justifying maxims stay excluded", () => {
   for (const id of Object.keys(bank.excluded_regressions || {})) {
-    assert.ok(!approvedIds.includes(id), `${id} is a documented regression and must stay excluded`);
+    assert.ok(!usedSourceIds.includes(id), `${id} is a documented regression and must stay excluded`);
   }
 
-  assert.ok(!approvedIds.includes("M-2021-031"));
-  assert.equal(rawById.get("M-2021-031")?.statement, "Sjukvården ska präglas av hög kvalitet, god tillgänglighet och valfrihet.");
-  assert.ok(!approvedIds.includes("S-2025-002"));
+  assert.equal(
+    rawById.get("M-2021-009")?.statement,
+    "Det offentliga ska inte utföra uppgifter som andra kan göra lika bra eller bättre.",
+  );
+  assert.equal(
+    rawById.get("M-2021-031")?.statement,
+    "Sjukvården ska präglas av hög kvalitet, god tillgänglighet och valfrihet.",
+  );
 });
 
-test("80-question mode can still draw ten questions from every party", () => {
-  for (const party of PARTIES) {
-    assert.ok((bank.question_ids_by_party?.[party] || []).length >= 10, `${party} lacks deep-mode coverage`);
+test("quality is not weakened to force an equal per-party quota", () => {
+  const coverage = Object.fromEntries(PARTIES.map((party) => [party, 0]));
+  for (const id of singletonIds) coverage[rawById.get(id).source_party] += 1;
+  for (const question of canonical) {
+    const parties = new Set(
+      [...(question.positions?.support || []), ...(question.positions?.oppose || [])]
+        .map((id) => rawById.get(id).source_party),
+    );
+    for (const party of parties) coverage[party] += 1;
   }
+
+  for (const party of PARTIES) assert.ok(coverage[party] >= 5, `${party} needs at least five source-coded issues`);
+  assert.ok(new Set(Object.values(coverage)).size > 1, "bank should not manufacture equal quotas by accepting weaker questions");
 });

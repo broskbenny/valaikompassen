@@ -9,13 +9,22 @@
 - Antal råposter: **371**
 - Alla poster har dokument-id, PDF-sida och avsnitt.
 - Alla poster är neutrala parafraser, inte citat.
-- `canonical_issue_id` är ännu `null`: datasetet ska **inte** användas för klassisk partimatchning förrän samma sakfrågor har normaliserats och alla partiers positioner kodats.
+- Fältet `canonical_issue_id` i råposterna är ännu `null`; canonical-sammanslagningen hanteras tills vidare separat i `../question-bank.json`.
 
 ## Viktigt: råpost är inte automatiskt kompassfråga
 
-Det här katalogträdet är det breda källspårade råmaterialet. En korrekt programparafras kan fortfarande vara för allmän eller okontroversiell för att fungera som valkompassfråga.
+Det här katalogträdet är det breda källspårade råmaterialet. En korrekt programparafras kan fortfarande vara för allmän, självrättfärdigande eller okontroversiell för att fungera som valkompassfråga.
 
-Appen använder därför **inte** alla 371 poster. Godkända kompassfrågor väljs explicit i `../question-bank.json`, där varje fråga har klarat ett hårdare test: den ska uttrycka ett konkret politiskt vägval och ha en rimlig seriös motposition. Plattityder och allmänna mål kan ligga kvar här för käll- och analysändamål utan att exponeras i frågeflödet.
+Appen använder därför **inte** alla 371 poster. `../question-bank.json` innehåller det hårdare kompasslagret med singleton-frågor och gemensamma canonical-frågor.
+
+En råpost kan alltså:
+
+- godkännas som egen kompassfråga,
+- användas som källstöd för en gemensam canonical-fråga,
+- användas som explicit motposition till en canonical-fråga,
+- eller ligga kvar enbart som källmaterial och aldrig visas i kompassen.
+
+Plattityder och formuleringar där svaret byggs in genom ord som “bättre”, “nödvändigt” eller “effektivt” får ligga kvar här för transparens utan att exponeras i frågeflödet.
 
 ## Fördelning
 
@@ -30,7 +39,7 @@ Appen använder därför **inte** alla 371 poster. Godkända kompassfrågor väl
 | MP | 50 |
 | L | 51 |
 
-Se `index.json` för ämnes- och typfördelning och `../question-bank.json` för kompassens handgranskade allowlist.
+Se `index.json` för ämnes- och typfördelning och `../question-bank.json` för kompassens handgranskade frågebank.
 
 ## Format
 
@@ -61,6 +70,8 @@ En rad = ett JSON-objekt. Exempel:
 
 ## Appanvändning
 
-Frågeflödet byggs endast av ID:n i `../question-bank.json`. Källpartiet hålls dolt tills användaren har svarat, och slumpningen stratifieras över parti och ämne så att ett mer detaljerat partiprogram inte dominerar.
+Frågeflödet byggs av `../question-bank.json`. Partierna bakom en fråga hålls dolda tills användaren har svarat. När flera partier delar samma sakpolitiska kärna ställs frågan en gång och de olika källparafraserna visas efter svaret.
 
-För faktisk klassisk valmatchning behövs dessutom ett separat normaliseringslager. Se `../../docs/METHODOLOGY.md`.
+Urvalet balanserar källkodad partitäckning och ämnesvariation men tvingar inte fram lika stora partikvoter. Det gör att frågekvaliteten kan hållas konstant även när partiprogrammen skiljer sig i detaljnivå.
+
+Se `../../docs/METHODOLOGY.md` för sammanslagnings- och poängregler.
