@@ -153,6 +153,7 @@ export function selectBalancedQuestions(statements, requestedSize = 48, rng = Ma
   const voteAvailable = remaining.filter(isVoteQuestion).length;
   const voteTarget = voteAvailable ? Math.min(voteAvailable, Math.max(1, Math.round(maxSize * 0.2))) : 0;
   chooseBalanced(remaining, selected, voteTarget, coverage, topicsByParty, rng, isVoteQuestion);
+  chooseBalanced(remaining, selected, maxSize, coverage, topicsByParty, rng, (question) => !isVoteQuestion(question));
   chooseBalanced(remaining, selected, maxSize, coverage, topicsByParty, rng);
 
   return shuffle(selected, rng);
