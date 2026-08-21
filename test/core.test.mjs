@@ -7,6 +7,8 @@ import {
   answeredCount,
   substantiveAnswerCount,
   getQuestionPartyPositions,
+  classifyPartyVote,
+  deriveVotePartyPositions,
   PARTIES,
 } from "../src/core.js";
 
@@ -75,6 +77,47 @@ test("explicit opposition inverts the answer instead of treating silence as oppo
   assert.equal(results.find((r) => r.party === "SD").score, 0);
   assert.equal(results.find((r) => r.party === "M").score, null);
   assert.equal(results.find((r) => r.party === "M").total, 0);
+});
+
+test("vote classification ignores absence and abstention and requires decisive cohesion", () => {
+  assert.equal(classifyPartyVote({ yes: 18, no: 1, abstain: 0, absent: 5 }, 0.8, 3), "yes");
+  assert.equal(classifyPartyVote({ yes: 1, no: 18, abstain: 0, absent: 5 }, 0.8, 3), "no");
+  assert.equal(classifyPartyVote({ yes: 1, no: 0, abstain: 19, absent: 4 }, 0.8, 3), null);
+  assert.equal(classifyPartyVote({ yes: 5, no: 5, abstain: 0, absent: 0 }, 0.8, 3), null);
+});
+
+test("Riksdagen party positions derive only from coherent decisive votes", () => {
+  const vote = {
+    yes_means: "support",
+    cohesion_threshold: 0.8,
+    minimum_decisive_votes: 3,
+    party_tallies: {
+      S: { yes: 0, no: 90, abstain: 0, absent: 17 },
+      M: { yes: 60, no: 0, abstain: 0, absent: 8 },
+      SD: { yes: 60, no: 0, abstain: 0, absent: 12 },
+      C: { yes: 1, no: 0, abstain: 19, absent: 4 },
+      V: { yes: 0, no: 20, abstain: 0, absent: 4 },
+      KD: { yes: 16, no: 0, abstain: 0, absent: 3 },
+      MP: { yes: 0, no: 15, abstain: 0, absent: 3 },
+      L: { yes: 14, no: 0, abstain: 0, absent: 2 },
+    },
+  };
+  const positions = deriveVotePartyPositions(vote);
+  assert.deepEqual(positions.support, ["M", "SD", "KD", "L"]);
+  assert.deepEqual(positions.oppose, ["S", "V", "MP"]);
+  assert.ok(!positions.support.includes("C") && !positions.oppose.includes("C"));
+});
+
+test("source-aware selection reserves a bounded share for direct Riksdagen votes", () => {
+  const program = fixture(12);
+  const votes = Array.from({ length: 8 }, (_, i) => ({
+    id: `R-${i}`,
+    topic: `vote-${i % 3}`,
+    source_kinds: ["riksdag_vote"],
+    position_parties: { support: PARTIES.slice(0, 4), oppose: PARTIES.slice(4) },
+  }));
+  const selected = selectBalancedQuestions([...program, ...votes], 24, seededRng(9));
+  assert.equal(selected.filter((q) => q.source_kinds?.includes("riksdag_vote")).length, 5);
 });
 
 test("party result maps -2..2 to 0..100 for source-party questions", () => {
