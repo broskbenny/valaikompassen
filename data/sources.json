@@ -1,0 +1,95 @@
+{
+  "as_of": "2026-08-21",
+  "selection_rule": "Latest official long-form party, idea or principle program published by each current Riksdag party. Election platforms are excluded.",
+  "sources": [
+    {
+      "party": "S",
+      "party_name": "Socialdemokraterna",
+      "document_id": "S-2025",
+      "document_type": "partiprogram",
+      "title": "Socialdemokraternas partiprogram",
+      "adopted": "2025-06-01",
+      "url": "https://www.socialdemokraterna.se/download/18.66b0e5c8197581879ca15ce/1749742402637/Socialdemokraternas%20partiprogram%202025.pdf",
+      "official_landing_page": "https://www.socialdemokraterna.se/var-politik/partiprogram-och-riktlinjer",
+      "notes": "Antaget vid partikongressen i Göteborg 28 maj–1 juni 2025."
+    },
+    {
+      "party": "M",
+      "party_name": "Moderaterna",
+      "document_id": "M-2021",
+      "document_type": "ideprogram",
+      "title": "Frihet och ansvar – Moderaternas idéprogram",
+      "adopted": "2021-10-24",
+      "url": "https://moderaterna.se/app/uploads/2022/01/Ideprogram_digitalt_9dec.pdf",
+      "official_landing_page": "https://moderaterna.se/ideprogram/",
+      "notes": "Antaget vid Moderaternas arbetsstämma i Helsingborg 21–24 oktober 2021; det idéprogram som partiet fortsatt publicerar som sitt aktuella grundprogram."
+    },
+    {
+      "party": "SD",
+      "party_name": "Sverigedemokraterna",
+      "document_id": "SD-2023",
+      "document_type": "principprogram",
+      "title": "Sverigedemokraternas principprogram 2023",
+      "adopted": "2023",
+      "url": "https://www.sd.se/wp-content/uploads/2024/01/sverigedemokraternas-principprogram-2023-1.pdf",
+      "official_landing_page": "https://www.sd.se/dokument/",
+      "notes": "SD publicerar även en valplattform 2026; den är avsiktligt exkluderad enligt urvalsregeln."
+    },
+    {
+      "party": "C",
+      "party_name": "Centerpartiet",
+      "document_id": "C-2013",
+      "document_type": "ideprogram",
+      "title": "En hållbar framtid – Centerpartiets idéprogram",
+      "adopted": "2013-03",
+      "url": "https://www.centerpartiet.se/download/18.30dab7701820ef4638c2183/1659437352027/Id%C3%A9program_En_h%C3%A5llbar_framtid-2022.pdf",
+      "official_landing_page": "https://www.centerpartiet.se/",
+      "notes": "Antaget 2013 i Upplands Väsby och fortsatt publicerat av partiet som aktuellt idéprogram. Filnamnet hos partiet innehåller 2022."
+    },
+    {
+      "party": "V",
+      "party_name": "Vänsterpartiet",
+      "document_id": "V-2024",
+      "document_type": "partiprogram",
+      "title": "Vänsterpartiets partiprogram",
+      "adopted": "2024",
+      "url": "https://www.vansterpartiet.se/wp-content/uploads/2024/11/partiprogram_2024_tryck.pdf",
+      "official_landing_page": "https://www.vansterpartiet.se/resursbank/partiprogram/",
+      "notes": "Antaget av Vänsterpartiets kongress 2024."
+    },
+    {
+      "party": "KD",
+      "party_name": "Kristdemokraterna",
+      "document_id": "KD-2025",
+      "document_type": "principprogram",
+      "title": "Kristdemokraternas principprogram",
+      "adopted": "2025",
+      "url": "https://kristdemokraterna.se/download/18.7932b3db19c9887db6c221c/1773136182639/Principprogram%20hemsida.pdf",
+      "official_landing_page": "https://kristdemokraterna.se/var-politik/ideologi-och-principprogram",
+      "notes": "Beslutat av rikstinget 2025."
+    },
+    {
+      "party": "MP",
+      "party_name": "Miljöpartiet de gröna",
+      "document_id": "MP-2025",
+      "document_type": "partiprogram",
+      "title": "Miljöpartiets partiprogram 2025",
+      "adopted": "2025-10-19",
+      "url": "https://www.mp.se/wp-content/uploads/2025/12/miljopartiets-partiprogram-2025.pdf",
+      "official_landing_page": "https://www.mp.se/om/partiprogram/",
+      "notes": "Beslutat av partikongressen 17–19 oktober 2025."
+    },
+    {
+      "party": "L",
+      "party_name": "Liberalerna",
+      "document_id": "L-2023",
+      "document_type": "partiprogram",
+      "title": "Frihet i globaliseringens tid – Liberalernas partiprogram",
+      "adopted": "2013",
+      "last_program_update": "2023",
+      "url": "https://www.liberalerna.se/wp-content/uploads/liberalernas-partiprogram-2022docx-komprimerad.pdf",
+      "official_landing_page": "https://www.liberalerna.se/politik/liberalism",
+      "notes": "Antaget 2013, med uppdateringar vid landsmötena 2015–2023; den version partiet publicerar som partiprogram 2026."
+    }
+  ]
+}

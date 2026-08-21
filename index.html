@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f6f3eb" />
+  <meta name="description" content="En källspårbar valkompass byggd på riksdagspartiernas senaste långsiktiga partiprogram." />
+  <title>Val AI-kompassen 2026</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Hoppa till innehållet</a>
+  <header class="site-header">
+    <a class="brand" href="#" data-action="home" aria-label="Val AI-kompassen, startsida">
+      <span class="brand-mark" aria-hidden="true">V</span>
+      <span>Val AI-kompassen <strong>2026</strong></span>
+    </a>
+    <nav aria-label="Huvudmeny">
+      <button class="nav-link" data-action="about">Metod & källor</button>
+    </nav>
+  </header>
+
+  <main id="main" class="shell" tabindex="-1">
+    <section id="start-view" class="view hero-view" aria-labelledby="start-title">
+      <p class="eyebrow">Riksdagsvalet 2026</p>
+      <h1 id="start-title">Tyck om sakpolitiken<br><span>innan du ser partiet.</span></h1>
+      <p class="lead">Du får korta påståenden hämtade ur de åtta riksdagspartiernas senaste långsiktiga parti-, idé- eller principprogram. Partiet bakom påståendet hålls dolt medan du svarar.</p>
+
+      <div class="start-grid">
+        <div class="start-card">
+          <h2>Välj omfattning</h2>
+          <div class="length-options" role="radiogroup" aria-label="Antal frågor">
+            <label class="length-option">
+              <input type="radio" name="length" value="24" />
+              <span><strong>24</strong><small>Snabb · 3 per parti</small></span>
+            </label>
+            <label class="length-option selected">
+              <input type="radio" name="length" value="48" checked />
+              <span><strong>48</strong><small>Standard · 6 per parti</small></span>
+            </label>
+            <label class="length-option">
+              <input type="radio" name="length" value="80" />
+              <span><strong>80</strong><small>Djup · 10 per parti</small></span>
+            </label>
+          </div>
+          <button id="start-button" class="primary-button">Starta kompassen</button>
+          <button id="resume-button" class="secondary-button hidden">Fortsätt tidigare omgång</button>
+        </div>
+
+        <aside class="method-card" aria-label="Så fungerar det">
+          <div><span class="method-number">01</span><p>Ett påstående i taget. Ingen partilogga.</p></div>
+          <div><span class="method-number">02</span><p>Svara mycket dåligt, dåligt, bra, mycket bra eller vet ej.</p></div>
+          <div><span class="method-number">03</span><p>Resultatet visar hur väl du gillar varje partis egna programskrivningar.</p></div>
+        </aside>
+      </div>
+      <p id="load-status" class="load-status" role="status">Laddar källmaterial…</p>
+    </section>
+
+    <section id="quiz-view" class="view hidden" aria-live="polite">
+      <div class="quiz-topline">
+        <button class="back-link" data-action="home">← Avsluta</button>
+        <span id="progress-label">1 / 48</span>
+        <button id="show-results-early" class="back-link">Resultat</button>
+      </div>
+      <div class="progress-track" aria-hidden="true"><div id="progress-bar" class="progress-bar"></div></div>
+
+      <article class="question-card">
+        <div class="question-meta">
+          <span id="topic-label" class="topic-pill">Ekonomi</span>
+          <span id="type-label">Förslag</span>
+        </div>
+        <h2 id="question-text">Påstående</h2>
+        <p class="question-prompt">Vad tycker du om förslaget eller ställningstagandet?</p>
+
+        <div class="answer-grid" role="group" aria-label="Svarsalternativ">
+          <button class="answer-button" data-answer="very_bad"><span class="answer-symbol">−−</span><span>Mycket dåligt</span></button>
+          <button class="answer-button" data-answer="bad"><span class="answer-symbol">−</span><span>Dåligt</span></button>
+          <button class="answer-button" data-answer="good"><span class="answer-symbol">+</span><span>Bra</span></button>
+          <button class="answer-button" data-answer="very_good"><span class="answer-symbol">++</span><span>Mycket bra</span></button>
+          <button class="answer-button unsure" data-answer="unsure"><span>Vet ej / ingen åsikt</span></button>
+        </div>
+
+        <details id="source-details" class="source-details">
+          <summary>Visa källan efter att jag svarat</summary>
+          <div id="source-content"></div>
+        </details>
+      </article>
+
+      <div class="quiz-actions">
+        <button id="previous-button" class="secondary-button">Föregående</button>
+        <button id="next-button" class="primary-button" disabled>Nästa</button>
+      </div>
+    </section>
+
+    <section id="results-view" class="view hidden" aria-labelledby="results-title">
+      <p class="eyebrow">Din programaffinitet</p>
+      <h1 id="results-title">Vilka programskrivningar<br><span>gillade du mest?</span></h1>
+      <p id="results-summary" class="lead"></p>
+      <div id="results-list" class="results-list"></div>
+      <div class="results-actions">
+        <button id="restart-button" class="primary-button">Gör en ny slumpning</button>
+        <button class="secondary-button" data-action="about">Läs metod & begränsningar</button>
+      </div>
+      <div class="result-note">
+        <h2>Det här är inte en traditionell valkompasspoäng</h2>
+        <p>Varje parti bedöms här bara utifrån påståenden som kommer från det egna långsiktiga programmet. Urvalet är balanserat mellan partierna, men programmen är olika detaljerade och samma sakfråga är ännu inte kodad mot samtliga åtta partier. Resultatet ska därför läsas som <strong>programaffinitet</strong>, inte som en prognos över vilket parti du “borde” rösta på.</p>
+      </div>
+    </section>
+
+    <section id="about-view" class="view hidden" aria-labelledby="about-title">
+      <button class="back-link" data-action="home">← Till startsidan</button>
+      <p class="eyebrow">Metod & transparens</p>
+      <h1 id="about-title">Så är kompassen byggd.</h1>
+      <div class="prose-grid">
+        <article>
+          <h2>Källurval</h2>
+          <p>Vi använder det senaste officiella långsiktiga grundprogram som respektive riksdagsparti publicerar: partiprogram, idéprogram eller principprogram. Valmanifest och valplattformar hålls utanför denna version.</p>
+          <div id="source-list" class="source-list"></div>
+        </article>
+        <article>
+          <h2>Från program till fråga</h2>
+          <p>Historik, problembeskrivningar och ren retorik filtreras bort. Kvar blir korta parafraser av konkreta förslag och tydliga ställningstaganden. Varje datapost sparar dokument, sida och avsnitt.</p>
+          <h2>Urvalet i en omgång</h2>
+          <p>Frågorna slumpas, men inte helt naivt. Varje parti får lika många frågor och algoritmen försöker sprida dem över flera ämnesområden. Det minskar risken att ett långt eller detaljrikt program dominerar.</p>
+          <h2>Poängen</h2>
+          <p>Mycket dåligt = −2, dåligt = −1, bra = +1 och mycket bra = +2. “Vet ej” räknas inte in. Medelvärdet per parti skalas sedan till 0–100. Resultatet visar därför hur positiv du varit till ett partis egna programskrivningar.</p>
+          <h2>Nästa metodlager</h2>
+          <p>Projektets nästa datasteg är en gemensam frågematris där samma neutrala sakfråga kodas mot alla åtta partier med källstöd. Först då går det att göra en klassisk positionsmatchning utan att blanda ihop programmens olika detaljnivå.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="error-view" class="view hidden" aria-labelledby="error-title">
+      <p class="eyebrow">Något gick fel</p>
+      <h1 id="error-title">Källmaterialet kunde inte laddas.</h1>
+      <p id="error-message" class="lead"></p>
+      <button class="primary-button" onclick="location.reload()">Försök igen</button>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>Öppen källkod · källspårbar data</span>
+    <a href="https://github.com/broskbenny/valaikompassen" rel="noreferrer">GitHub</a>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
