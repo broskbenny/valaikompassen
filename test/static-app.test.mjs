@@ -15,29 +15,47 @@ test("app has all required views and answer options", () => {
   }
 });
 
-test("app builds displayed questions from singleton and canonical source coding", () => {
+test("app builds displayed questions from programs and curated Riksdagen votes", () => {
   assert.match(app, /PARTIES\.map\(\(party\) => fetchText\(`data\/statements\/\$\{party\}\.jsonl`\)\)/);
   assert.match(app, /data\/sources\.json/);
   assert.match(app, /data\/question-bank\.json/);
+  assert.match(app, /data\/riksdagen\/votes\.json/);
   assert.match(app, /singleton_ids/);
   assert.match(app, /canonical_questions/);
-  assert.match(app, /buildQuestionBank/);
-  assert.match(app, /position_parties/);
+  assert.match(app, /merge_program_ids/);
+  assert.match(app, /deriveVotePartyPositions/);
+  assert.match(app, /source_kinds/);
 });
 
-test("party sources stay gated and multiple source positions are revealed only after answering", () => {
+test("party sources stay gated and all evidence is revealed only after answering", () => {
   assert.match(app, /summary\.tabIndex = answered \? 0 : -1/);
   assert.match(app, /!state\.answers\[current\.id\]/);
   assert.match(app, /event\.currentTarget\.open = false/);
-  assert.match(app, /Stödjer påståendet/);
-  assert.match(app, /Motsätter sig påståendet/);
+  assert.match(app, /Programkällor som stödjer påståendet/);
+  assert.match(app, /Programkällor som motsätter sig påståendet/);
+  assert.match(app, /Riksdagsomröstning/);
+  assert.match(app, /Ja \$\{Number\(tally\.yes/);
+  assert.match(app, /Avstår/);
+  assert.match(app, /Frånvarande/);
+});
+
+test("new source layer invalidates older saved sessions", () => {
+  assert.match(app, /valaikompassen\.session\.v4/);
+  assert.match(app, /saved\?\.version === 4/);
+  assert.match(app, /\+riksdag-/);
 });
 
 test("old equal-per-party promise is removed from the UI", () => {
   assert.doesNotMatch(html, /3 per parti/);
   assert.doesNotMatch(html, /6 per parti/);
   assert.doesNotMatch(html, /10 per parti/);
-  assert.match(html, /tvingar inte fram exakt lika många frågor per parti/);
+  assert.match(html, /Frågekvaliteten sänks aldrig för att fylla en partikvot/);
+});
+
+test("UI documents the parliamentary interpretation guardrail", () => {
+  assert.match(html, /En rå Ja-röst är inte automatiskt ett sakpolitiskt Ja/);
+  assert.match(html, /minst 80 procent/);
+  assert.match(html, /Avstående och frånvaro räknas inte som ställningstagande/);
 });
 
 test("responsive and reduced-motion CSS are present", () => {

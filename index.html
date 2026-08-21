@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#f6f3eb" />
-  <meta name="description" content="En källspårbar valkompass byggd på riksdagspartiernas senaste långsiktiga partiprogram." />
+  <meta name="description" content="En källspårbar valkompass byggd på partiprogram och konkreta riksdagsomröstningar." />
   <title>Val AI-kompassen 2026</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -24,7 +24,7 @@
     <section id="start-view" class="view hero-view" aria-labelledby="start-title">
       <p class="eyebrow">Riksdagsvalet 2026</p>
       <h1 id="start-title">Tyck om sakpolitiken<br><span>innan du ser partiet.</span></h1>
-      <p class="lead">Du får konkreta politiska vägval hämtade ur de åtta riksdagspartiernas senaste långsiktiga parti-, idé- eller principprogram. Plattityder och självrättfärdigande formuleringar sorteras bort. När flera partier uttrycker samma sak ställs frågan bara en gång.</p>
+      <p class="lead">Du får konkreta politiska vägval med källstöd i partiernas långsiktiga program och i utvalda direkta omröstningar i riksdagen under mandatperioden 2022–2026. Samma sakfråga ställs bara en gång och partierna hålls dolda medan du svarar.</p>
 
       <div class="start-grid">
         <div class="start-card">
@@ -49,7 +49,7 @@
 
         <aside class="method-card" aria-label="Så fungerar det">
           <div><span class="method-number">01</span><p>Bara frågor med ett konkret politiskt vägval och en rimlig motposition.</p></div>
-          <div><span class="method-number">02</span><p>Samma sakfråga ställs en gång även när flera partier delar ståndpunkt.</p></div>
+          <div><span class="method-number">02</span><p>Program och faktiska riksdagsröster kan ge källstöd till samma fråga utan att den räknas dubbelt.</p></div>
           <div><span class="method-number">03</span><p>Resultatet använder bara partipositioner som kan beläggas direkt i källmaterialet.</p></div>
         </aside>
       </div>
@@ -103,7 +103,7 @@
       </div>
       <div class="result-note">
         <h2>Källstödd, men fortfarande ofullständig</h2>
-        <p>Samma fråga kan räknas för flera partier när deras program uttryckligen stödjer samma ståndpunkt. När ett program uttryckligen intar motsatt position räknas svaret omvänt. Om ett parti inte uttalar sig om frågan får det ingen poäng alls från den frågan — tystnad tolkas aldrig som motstånd. Matrisen täcker ännu inte samtliga åtta partier på varje sakfråga.</p>
+        <p>En partiposition kan beläggas i ett långsiktigt program, en direkt riksdagsomröstning eller båda. Flera källor till samma position ger aldrig extra vikt. Vid voteringar kodas bara en partiposition när partigruppens avgivna ja/nej-röster är tydligt samstämmiga. Frånvaro, avstående och tystnad i ett program blir aldrig automatiskt ja eller nej.</p>
       </div>
     </section>
 
@@ -114,21 +114,23 @@
       <div class="prose-grid">
         <article>
           <h2>Källurval</h2>
-          <p>Vi använder det senaste officiella långsiktiga grundprogram som respektive riksdagsparti publicerar: partiprogram, idéprogram eller principprogram. Valmanifest och valplattformar hålls utanför denna version.</p>
+          <p>Vi kombinerar två källtyper. Dels används respektive riksdagspartis senaste officiella långsiktiga parti-, idé- eller principprogram. Dels används direkt voteringsdata från Sveriges riksdags öppna data för den nuvarande mandatperioden 2022–2026.</p>
           <div id="source-list" class="source-list"></div>
         </article>
         <article>
-          <h2>Från program till fråga</h2>
-          <p>Först extraheras källspårade förslag och ställningstaganden. Därefter görs en separat kompassgranskning. En formulering får bara bli fråga om den innehåller ett konkret politiskt val och det finns en rimlig seriös motposition.</p>
-          <p>Det räcker inte att meningen låter politisk. Villkor som “lika bra eller bättre”, “nödvändigt”, “effektivt” eller “rimligt” kan baka in argumentet för svaret och gör då frågan olämplig. Vi föredrar att ta bort en sådan formulering framför att fylla en partikvot.</p>
+          <h2>Från källa till fråga</h2>
+          <p>En formulering får bara bli fråga om den innehåller ett konkret politiskt val och det finns en rimlig seriös motposition. Plattityder, självrättfärdigande villkor och vaga principer sorteras bort även om de är korrekt återgivna ur en källa.</p>
+          <h2>Riksdagsomröstningar</h2>
+          <p>En rå Ja-röst är inte automatiskt ett sakpolitiskt Ja. Riksdagen röstar om en bestämd förslagspunkt, ofta utskottets förslag mot en reservation. Därför läser vi vad just den förslagspunkten och motförslaget innebär innan voteringen får bli en kompassfråga. Procedurfrågor, tvetydiga avslagsvoteringar och beslutspaket som inte kan återges troget i en enda besvarbar fråga tas inte med.</p>
+          <p>Partiets position hämtas från ledamöternas faktiska röster. Minst tre ledamöter måste ha röstat Ja eller Nej och minst 80 procent av dessa avgivna ja/nej-röster måste gå åt samma håll. Avstående och frånvaro räknas inte som ställningstagande. En splittrad partigrupp lämnas okodad på den frågan.</p>
           <h2>Gemensamma sakfrågor</h2>
-          <p>När flera partier uttrycker i princip samma ståndpunkt formuleras en gemensam neutral kärnfråga och ställs bara en gång. Efter svaret visas varje partis källnära parafras, så skillnader i exempelvis villkor eller ambitionsnivå går att se. Om skillnaden är politiskt viktig — som en exakt arbetstidsnivå — behålls separata frågor.</p>
+          <p>När program och voteringar beskriver samma politiska kärna ställs frågan bara en gång. Efter svaret visas källorna separat. Om två källor skulle ge motsatt position för samma parti på exakt samma fråga stoppas sammanslagningen för manuell granskning i stället för att en källa väljs tyst.</p>
           <h2>Urvalet i en omgång</h2>
-          <p>Frågorna slumpas ur den handgranskade banken. Algoritmen försöker ge jämn källtäckning mellan partierna och sprida ämnen, men den tvingar inte fram exakt lika många frågor per parti. Ett abstrakt program får alltså inte sämre frågor godkända bara för att fylla en kvot.</p>
+          <p>Algoritmen försöker ge jämn källtäckning mellan partier och ämnen. Direkta voteringsfrågor får en avgränsad andel av en normal omgång så att den nya källtypen kompletterar i stället för att tränga undan programmaterialet. Frågekvaliteten sänks aldrig för att fylla en partikvot.</p>
           <h2>Poängen</h2>
-          <p>Mycket dåligt = −2, dåligt = −1, bra = +1 och mycket bra = +2. “Vet ej” räknas inte in. För ett parti som uttryckligen stödjer påståendet används svaret direkt. För ett parti som uttryckligen motsätter sig påståendet vänds tecknet. Medelvärdet skalas sedan till 0–100.</p>
+          <p>Mycket dåligt = −2, dåligt = −1, bra = +1 och mycket bra = +2. “Vet ej” räknas inte in. För ett parti som belagt stödjer påståendet används svaret direkt; för uttryckligt motstånd vänds tecknet. Varje sakfråga räknas högst en gång per parti även om flera källor belägger samma position.</p>
           <h2>Begränsningen</h2>
-          <p>Vi kodar bara positioner som faktiskt kan beläggas i programmen. Att ett parti saknar en formulering betyder inte att partiet är emot den. Nästa metodsteg är därför att öka täckningen så att fler gemensamma sakfrågor har källkodade positioner för samtliga åtta partier.</p>
+          <p>Voteringslagret är en kuraterad första uppsättning, inte alla omröstningar under mandatperioden. Projektet innehåller ett separat ingestflöde som kan hämta Riksdagens rådata, men nya voteringskandidater exponeras inte automatiskt innan den parlamentariska innebörden har granskats.</p>
         </article>
       </div>
     </section>

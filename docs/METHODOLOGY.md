@@ -1,25 +1,30 @@
 # Metod: källmaterial, frågekvalitet, sammanslagning och poäng
 
-## 1. Källurval
+## 1. Källor
 
-För varje av de åtta partier som sitter i riksdagen används det senaste officiella långsiktiga grundprogram som partiet självt publicerar: **partiprogram**, **idéprogram** eller **principprogram**. Valplattformar, valmanifest, budgetmotioner och enskilda sakpolitiska webbsidor ingår inte i denna dataversion.
+Kompassen använder två typer av politiska förstahandskällor.
 
-Källregistret finns i `data/sources.json` och innehåller dokumentets officiella URL, dokumenttyp och besluts-/versionsår. När ett äldre antaget program har senare officiella uppdateringar används den senast publicerade programversionen.
+### 1.1 Långsiktiga partiprogram
 
-## 2. Råextraktionen är inte samma sak som frågebanken
+För varje av de åtta riksdagspartierna används det senaste officiella långsiktiga grundprogram som partiet självt publicerar: **partiprogram**, **idéprogram** eller **principprogram**. Källregistret finns i `data/sources.json`.
 
-`data/statements/*.jsonl` är ett **källspårbart råmaterial** med 371 kuraterade programrader. Det är medvetet bredare än de frågor som visas i appen. En formulering kan vara korrekt återgiven ur ett partiprogram och ändå vara för allmän, för retorisk eller för självrättfärdigande för att fungera som valkompassfråga.
+### 1.2 Direkta riksdagsomröstningar
 
-Två typer finns i råmaterialet:
+Som andra källager används utvalda direkta sakvoteringar från **Sveriges riksdags öppna data**. Första versionen avgränsas till mandatperioden 2022–2026, alltså riksmötena 2022/23–2025/26.
 
-- `proposal`: ett förslag om vad stat, kommun, EU, arbetsmarknad eller annan samhällsaktör ska göra eller hur ett system ska utformas.
-- `position`: ett normativt politiskt ställningstagande som går att hålla med eller inte hålla med om.
+Den kuraterade voteringsbanken finns i `data/riksdagen/votes.json`. Den fulla voteringsmetoden beskrivs i `docs/RIKSDAGEN_OPEN_DATA.md`.
 
-`review.status = curated` betyder att raden är källgranskad som programparafras. Det betyder **inte** att den automatiskt är godkänd för kompassen.
+## 2. Råmaterial är inte samma sak som frågebank
+
+`data/statements/*.jsonl` är ett källspårbart råmaterial med 371 kuraterade programrader. En formulering kan vara korrekt återgiven ur ett program men ändå vara för allmän, retorisk eller självrättfärdigande för kompassen.
+
+På samma sätt är Riksdagens fulla voteringsdata ett råmaterial. `scripts/sync_riksdagen_votes.py` kan skapa en kandidatlista, men inga genererade voteringar exponeras automatiskt i appen.
+
+Båda källtyperna passerar alltså en separat mänsklig kvalitetsgrind.
 
 ## 3. Kvalitetsgrinden
 
-Den synliga frågebanken finns i `data/question-bank.json`. En fråga måste mäta ett **politiskt vägval**, inte om användaren gillar något allmänt positivt.
+En synlig fråga måste mäta ett **politiskt vägval**, inte om användaren gillar något allmänt positivt.
 
 En fråga godkänns normalt när kärnan är ett konkret val om exempelvis:
 
@@ -27,11 +32,10 @@ En fråga godkänns normalt när kärnan är ett konkret val om exempelvis:
 - skatt, avgift, bidrag eller offentlig utgift,
 - offentligt eller privat ägande och huvudmannaskap,
 - rättighet, skyldighet eller kvalificeringskrav,
-- en specificerad nivå, andel, tid eller annan mätbar målsättning,
+- en specificerad nivå, andel eller tidsgräns,
 - institutionell förändring eller ansvarsfördelning,
-- marknad, valfrihet eller regleringsmodell,
-- ett konkret internationellt åtagande eller medlemskapsval,
-- ett identifierbart politiskt styrmedel.
+- ett identifierbart politiskt styrmedel,
+- ett konkret internationellt åtagande eller medlemskapsval.
 
 ### 3.1 Motpositionstestet
 
@@ -39,119 +43,108 @@ Den viktigaste kontrollfrågan är:
 
 > Kan en seriös politisk motståndare säga nej till påståendet utan att därmed behöva säga att den vill ha ett sämre samhälle?
 
-Om svaret är nej är formuleringen normalt för platt för kompassen.
-
-Därför sorteras meningar som i huvudsak säger att vården ska ha hög kvalitet, skolan ska vara bra, ekonomin stark, samhället tryggt eller politiken rättvis bort om de inte samtidigt innehåller ett konkret omstritt instrument.
+Om svaret är nej är formuleringen normalt olämplig.
 
 ### 3.2 Självrättfärdigande villkor
 
-Även en till synes ideologisk mening kan vara en dålig fråga om argumentet för svaret är inbyggt i villkoret. Ord och fraser som **”lika bra eller bättre”**, **”nödvändigt”**, **”effektivt”**, **”rimligt”** eller liknande måste därför granskas särskilt.
-
-Råposten `M-2021-009` är ett dokumenterat regressionsexempel:
+Ord som **”lika bra eller bättre”**, **”nödvändigt”**, **”effektivt”** eller **”rimligt”** kan baka in argumentet för svaret. Ett dokumenterat regressionsexempel är:
 
 > Det offentliga ska inte utföra uppgifter som andra kan göra lika bra eller bättre.
 
-Problemen är två:
+Raden finns kvar som programparafras men är uttryckligen spärrad från kompassen.
 
-1. ett nej låter som ett krav på att välja en sämre utförare, eftersom ”lika bra eller bättre” redan avgör kvalitetsfrågan,
-2. ordet ”uppgifter” döljer den verkliga politiska konflikten — sjukvård, skola, järnväg, sophämtning och polis är helt olika vägval.
-
-Raden finns kvar som korrekt källparafras men är uttryckligen förbjuden i kompassbanken.
-
-Samma princip utesluter bland annat `M-2021-031`, där ”hög kvalitet” och ”god tillgänglighet” gör frågan för allmänt positiv.
-
-När en rå formulering är för vag föredrar vi att **utesluta den** framför att skriva om den till ett skarpare förslag som källan inte säkert stödjer.
+När källan är för vag föredrar vi att utesluta formuleringen framför att skriva om den till ett skarpare förslag som källan inte säkert stödjer.
 
 ## 4. Neutral redigering
 
-Påståendet i rådatasetets `statement` är en **neutral, kort parafras**, inte ett citat. Det ska:
+En kompassfråga ska:
 
 1. kunna förstås utan omgivande brödtext,
-2. innehålla endast ett huvudsakligt ställningstagande,
+2. innehålla ett tydligt huvudsakligt vägval,
 3. undvika partinamn och kampanjspråk,
-4. behålla den politiskt avgörande riktningen och viktiga begränsningar,
-5. inte göras mer specifikt eller konfliktfyllt än källpassagen medger.
+4. behålla avgörande villkor, nivåer och avgränsningar,
+5. inte göras mer specifik än källan medger.
 
-I frågebanken kan en synlig formulering ibland göras smalare än råparafrasen när den smalare kärnan klart stöds av samma källa. Exempelvis kan en sammansatt råmening om både EU- och Nato-medlemskap ge en synlig fråga endast om Nato. Den borttagna delen används då inte för att dra några slutsatser.
+Om en källa innehåller flera politiskt separerbara komponenter ska den normalt inte göras till en enda fråga där väljaren måste ta ställning till allt samtidigt.
 
 ## 5. Gemensamma sakfrågor
 
-Frågebank v0.3 skiljer mellan:
+Programbank v0.3 skiljer mellan `singleton_ids` och `canonical_questions`. Banken innehåller 81 singleton-frågor och 18 canonical-frågor, totalt 99 programbaserade sakfrågor före sammanslagning med voteringslagret.
 
-- `singleton_ids`: starka frågor där en källrad fortfarande motsvarar en egen synlig sakfråga,
-- `canonical_questions`: gemensamma sakfrågor där flera program uttrycker samma politiska kärna.
+Flera källor får sammanföras när en neutral gemensam kärna kan skrivas utan att viktig politisk innebörd tappas. Skillnader behålls som separata frågor när nyansen i sig är ett betydelsefullt val, exempelvis olika exakta arbetstidsnivåer eller olika grader av ett förbud.
 
-Banken innehåller **81 singleton-frågor och 18 canonical-frågor, totalt 99 unika frågor**.
+Efter att användaren svarat visas de källnära formuleringarna separat.
 
-### 5.1 När får frågor slås ihop?
+## 6. Hur en riksdagsvotering blir en fråga
 
-Två eller flera källrader får sammanföras när en neutral gemensam kärnformulering kan skrivas utan att någon källas politiska innebörd förstärks eller försvagas på ett avgörande sätt.
+En rå `Ja`-röst är inte automatiskt sakpolitiskt stöd. Riksdagen röstar om en bestämd **förslagspunkt**, ofta utskottets förslag mot en reservation.
 
-Exempel är:
+Innan en votering får användas granskas därför:
 
-- statligt huvudansvar för skolan,
-- författningsdomstol,
-- permanenta uppehållstillstånd som huvudregel,
-- kärnvapen på svenskt territorium,
-- abortskydd i grundlagen,
-- behovsstyrd arbetskraftsinvandring.
+1. vilken förslagspunkt som voteringen gäller,
+2. vad ett Ja till huvudförslaget konkret innebär,
+3. vad motförslaget eller reservationen innebär,
+4. om hela konflikten kan återges som en neutral och besvarbar kompassfråga.
 
-### 5.2 När får frågor inte slås ihop?
+Följande exkluderas normalt:
 
-Skillnader behålls som separata frågor när nyansen i sig är ett viktigt politiskt val. Ett tydligt exempel är arbetstid: en allmän riktning mot kortare arbetstid är inte automatiskt samma position som en lagstadgad 35-timmarsvecka.
+- procedurfrågor,
+- tvetydiga avslagsvoteringar,
+- motioner där Nej inte kan översättas till en entydig sakposition,
+- beslutspaket med flera separerbara konflikter,
+- frågor utan en faktisk politisk skiljelinje.
 
-Samma försiktighet gäller nivåer, tidsgränser, obligatoriska krav och olika grader av förbud.
+Det är uttryckligen förbjudet att välja en intressant detalj ur ett större lagpaket och sedan behandla varje Ja-röst till paketet som bevis för stöd till just den detaljen.
 
-### 5.3 Hur bevaras nyansen efter sammanslagning?
+## 7. Från ledamotsröster till partiposition
 
-Före svaret visas endast den neutrala gemensamma frågan och inga partier.
+För varje parti räknas de faktiska ledamotsrösterna `Ja`, `Nej`, `Avstår` och `Frånvarande`.
 
-Efter svaret visar appen varje partis **källnära råparafras**, dokument, sida och avsnitt. Därmed kan användaren se att partierna delar kärnposition men exempelvis anger olika villkor eller ambitionsnivåer.
+En partiposition kodas endast om:
 
-## 6. Stöd och explicit motstånd
+- minst **3** ledamöter från partiet har avgivit Ja eller Nej, och
+- minst **80 %** av de avgivna Ja/Nej-rösterna går åt samma håll.
 
-Varje canonical-fråga kan ha två källkodade sidor:
+`Avstår` och `Frånvarande` är aldrig automatiskt stöd eller motstånd. Om partigruppen är splittrad eller i huvudsak avstår lämnas partiet okodat på frågan.
 
-- `support`: programrader som uttryckligen stödjer den synliga formuleringen,
-- `oppose`: programrader som uttryckligen intar motsatt position.
+Trösklarna sparas på varje voteringspost och valideras automatiskt.
 
-Opposition kodas endast när den går att belägga direkt. Frånvaro eller tystnad är **inte** opposition.
+## 8. Samma sakfråga i program och votering
 
-Det gör det möjligt att ställa en konflikt en gång i stället för som två spegelvända frågor. Exempel:
+Om en voteringsfråga motsvarar en befintlig programfråga ställs den **en gång**. Frågan kan bära både programkälla och voteringskälla.
 
-- om Sverige på sikt ska ha ett energisystem utan kärnkraft,
-- om permanenta uppehållstillstånd ska vara huvudregel,
-- om dagens skolval ska bevaras.
+Flera källor multiplicerar inte poängen. Varje sakfråga räknas högst en gång per parti.
 
-## 7. Källspårbarhet
+Om program och votering skulle placera samma parti på motsatta sidor av exakt samma sammanslagna fråga stoppar databyggaren frågan för manuell granskning. Ingen källa prioriteras tyst.
 
-Varje råpost måste ha:
+Nato är första konkreta exemplet på denna sammanslagning: programstödet och den direkta voteringen visas som två källor till samma sakfråga.
 
-- `document_id`,
-- 1-baserad PDF-sida (`pdf_page`),
-- närmaste rubrik/avsnitt (`section`).
+## 9. Källspårbarhet
 
-Canonical-frågor innehåller endast referenser till sådana råposter. Källans URL lagras centralt i `data/sources.json`.
+Programkällor sparar dokument-id, PDF-sida och avsnitt.
 
-Partikällor hålls dolda tills användaren har svarat. Därefter visas samtliga källkodade programpositioner för frågan.
+Voteringskällor sparar bland annat:
 
-## 8. Frågeurval utan tvingade partikvoter
+- riksmöte,
+- betänkande,
+- förslagspunkt,
+- voteringsdatum,
+- rubrik,
+- propositionens huvud-/motförslag,
+- direkt länk till Riksdagens dokumentdata,
+- exakta Ja/Nej/Avstår/Frånvarande-tal per parti.
 
-Tidigare krävdes minst tio godkända frågor från varje parti för att ge exakt 3, 6 eller 10 frågor per parti. Den regeln har tagits bort.
+Alla partikällor hålls dolda tills användaren har svarat.
 
-Skälet är metodiskt: programmen har olika detaljnivå. Om exakt lika kvoter är ett hårt krav skapas ett incitament att godkänna svagare formuleringar från mer abstrakta program.
+## 10. Frågeurval
 
-`selectBalancedQuestions()` använder i stället en täckningsbalanserad sampling:
+Urvalet använder inte hårda partikvoter. Algoritmen balanserar i stället källkodad partitäckning och ämnesvariation utan att sänka kvalitetsgränsen.
 
-1. varje fråga kan bidra med källtäckning för ett eller flera partier,
-2. algoritmen prioriterar partier som hittills har lägst täckning bland de återstående frågorna,
-3. delade frågor räknas som täckning för alla explicit kodade partier,
-4. ämnesvariation används som sekundär bonus,
-5. när ett partis starka källmaterial är uttömt fortsätter urvalet utan att tillverka svagare frågor.
+Det nya voteringslagret har dessutom en begränsad målandel i en omgång. När tillräckligt många voteringsfrågor finns reserveras ungefär 20 procent av frågorna för dem; resterande frågor tas från program/canonical-banken. Om voteringsbanken är mindre används alla tillgängliga voteringsfrågor men aldrig mer än vad banken faktiskt innehåller.
 
-Alternativen 24, 48 och 80 anger därför antal **unika sakfrågor**, inte en fast partikvot.
+Med den första banken innebär det fem voteringsfrågor i ett 24-frågorsläge och samtliga åtta i 48- och 80-frågorslägena.
 
-## 9. Svarsskala
+## 11. Svarsskala och poäng
 
 | Svar | Värde |
 |---|---:|
@@ -161,47 +154,56 @@ Alternativen 24, 48 och 80 anger därför antal **unika sakfrågor**, inte en fa
 | Mycket bra | +2 |
 | Vet ej / ingen åsikt | exkluderas |
 
-Det finns avsiktligt inget neutralt mittalternativ. `Vet ej` betyder att användaren inte vill att frågan ska påverka poängen.
+För varje fråga och parti med källkodad position gäller:
 
-## 10. Källstödd sakfrågematchning
+- `support`: svarsvärdet används direkt,
+- `oppose`: svarsvärdet multipliceras med `-1`,
+- okodad position: ingen poäng.
 
-För varje besvarad fråga och parti med explicit källkodad position gäller:
+Medelvärdet per parti skalas från `-2…+2` till `0…100` med `(mean + 2) / 4 * 100`.
 
-1. `support`: användarens svarsvärde används direkt,
-2. `oppose`: svarsvärdet multipliceras med `-1`,
-3. `not_stated`: ingen poäng och ingen implicit position.
+En fråga med både program- och voteringskälla räknas fortfarande bara en gång.
 
-För varje parti beräknas sedan medelvärdet över de frågor där partiet faktiskt har en kodad position. Medelvärdet på `-2…+2` skalas linjärt till `0…100` med formeln `(mean + 2) / 4 * 100`.
+## 12. Begränsningar
 
-Resultatvyn visar samtidigt hur många källkodade positioner i den aktuella omgången som användaren faktiskt har bedömt.
-
-Detta är ett steg närmare traditionell partimatchning än den tidigare programaffiniteten, eftersom samma användarsvar nu kan jämföras mot flera partiers uttryckliga positioner.
-
-## 11. Viktig begränsning
-
-Positionsmatrisen är fortfarande **partiell**. Alla åtta partier är inte källkodade på varje sakfråga.
+Positionsmatrisen är fortfarande partiell. Alla åtta partier är inte källkodade på varje programfråga, och voteringsbanken är ännu bara en handgranskad första uppsättning av mandatperiodens många omröstningar.
 
 Därför gäller:
 
-- avsaknad av programskrivning får aldrig tolkas som stöd eller motstånd,
-- ett parti med färre konkreta programpositioner kan få ett tunnare underlag,
-- poängen ska läsas tillsammans med antalet bedömda positioner,
-- full traditionell valkompassmatchning kräver fortsatt canonical-kodning mot samtliga partier.
+- tystnad i programmet är aldrig opposition,
+- frånvaro/avstående i en votering är aldrig en antagen position,
+- splittrade partigrupper kan lämnas okodade,
+- poängen ska läsas tillsammans med antalet bedömda källpositioner,
+- fler voteringsfrågor ska tillkomma genom systematisk genomgång, inte genom automatisk publicering.
 
-## 12. Reproducerbarhet och regressionstest
+## 13. Reproducerbarhet och regressionstest
 
-`python3 scripts/validate_dataset.py` verifierar rådatasetets strukturella integritet. Node-testsviten verifierar dessutom bland annat:
+Programdataset:
 
-- JSONL-parsning,
-- att samtliga käll-ID:n i frågebanken finns i råmaterialet,
-- att samma källrad inte skapar dubbla synliga frågor,
-- att samma parti inte kodas som både stöd och motstånd på samma canonical-fråga,
-- att dokumenterade plattityder och självrättfärdigande formuleringar förblir exkluderade,
-- att banken har minst 80 unika frågor för djup-läget,
-- att täckningsbalanseringen fungerar utan hårda partikvoter,
-- att explicit opposition vänder poängriktningen,
-- att tystnad inte skapar en antagen position,
-- att `vet ej` inte påverkar poängen,
-- att partikällorna hålls dolda tills frågan är besvarad.
+```bash
+python3 scripts/validate_dataset.py
+```
 
-GitHub Actions kör datasetvalidator, tester och syntaxkontroll på pull requests och på `main`.
+Kuraterade riksdagsvoteringar:
+
+```bash
+python3 scripts/validate_riksdagen_votes.py
+```
+
+Generera en rå kandidatlista från Riksdagens dataset:
+
+```bash
+python3 scripts/sync_riksdagen_votes.py --rm 2025/26 --output /tmp/voteringar-202526.json
+```
+
+App/test:
+
+```bash
+npm test
+node --check app.js
+node --check src/core.js
+```
+
+Testerna verifierar bland annat source-ID:n, canonical-sammanslagning, plattitydregressioner, voteringskohesion, avstående/för låg beslutsmängd, stöd/motstånd-riktning, source-aware sampling och att partikällor hålls dolda tills användaren svarat.
+
+GitHub Actions kör validatorer, tester och syntaxkontroll på pull requests och på `main`.

@@ -31,6 +31,34 @@ export function shuffle(items, rng = Math.random) {
   return copy;
 }
 
+export function classifyPartyVote(tally, cohesionThreshold = 0.8, minimumDecisiveVotes = 3) {
+  const yes = Number(tally?.yes || 0);
+  const no = Number(tally?.no || 0);
+  const decisive = yes + no;
+  if (decisive < minimumDecisiveVotes || yes === no) return null;
+
+  const winning = Math.max(yes, no);
+  if (winning / decisive < cohesionThreshold) return null;
+  return yes > no ? "yes" : "no";
+}
+
+export function deriveVotePartyPositions(voteQuestion) {
+  const support = [];
+  const oppose = [];
+  const threshold = Number(voteQuestion?.cohesion_threshold ?? 0.8);
+  const minimum = Number(voteQuestion?.minimum_decisive_votes ?? 3);
+  const yesMeans = voteQuestion?.yes_means === "oppose" ? "oppose" : "support";
+
+  for (const party of PARTIES) {
+    const direction = classifyPartyVote(voteQuestion?.party_tallies?.[party], threshold, minimum);
+    if (!direction) continue;
+    const stance = direction === "yes" ? yesMeans : (yesMeans === "support" ? "oppose" : "support");
+    (stance === "support" ? support : oppose).push(party);
+  }
+
+  return { support, oppose };
+}
+
 export function getQuestionPartyPositions(question) {
   const explicit = question?.position_parties;
   if (explicit) {
@@ -52,6 +80,67 @@ function partiesForQuestion(question) {
   return [...new Set([...positions.support, ...positions.oppose])];
 }
 
+function isVoteQuestion(question) {
+  return (question?.source_kinds || []).includes("riksdag_vote");
+}
+
+function pickBestQuestion(candidates, coverage, topicsByParty, rng) {
+  let best = null;
+  let bestScore = Number.NEGATIVE_INFINITY;
+
+  for (const question of shuffle(candidates, rng)) {
+    const parties = partiesForQuestion(question);
+    const topic = question.topic || "övrigt";
+    const score = parties.reduce((sum, party) => {
+      const underRepresentation = 10 / (1 + coverage.get(party));
+      const topicBonus = topicsByParty.get(party).has(topic) ? 0 : 2;
+      return sum + underRepresentation + topicBonus;
+    }, 0);
+
+    if (score > bestScore) {
+      best = question;
+      bestScore = score;
+    }
+  }
+
+  return best || candidates[0] || null;
+}
+
+function recordCoverage(question, coverage, topicsByParty) {
+  const topic = question.topic || "övrigt";
+  for (const party of partiesForQuestion(question)) {
+    coverage.set(party, coverage.get(party) + 1);
+    topicsByParty.get(party).add(topic);
+  }
+}
+
+function chooseBalanced(remaining, selected, targetCount, coverage, topicsByParty, rng, predicate = () => true) {
+  while (selected.length < targetCount) {
+    const eligible = remaining.filter(predicate);
+    if (!eligible.length) break;
+
+    const availableParties = PARTIES.filter((party) =>
+      eligible.some((question) => partiesForQuestion(question).includes(party)),
+    );
+
+    let candidates = eligible;
+    if (availableParties.length) {
+      const minimumCoverage = Math.min(...availableParties.map((party) => coverage.get(party)));
+      const targetParty = shuffle(
+        availableParties.filter((party) => coverage.get(party) === minimumCoverage),
+        rng,
+      )[0];
+      candidates = eligible.filter((question) => partiesForQuestion(question).includes(targetParty));
+    }
+
+    const best = pickBestQuestion(candidates, coverage, topicsByParty, rng);
+    if (!best) break;
+    selected.push(best);
+    remaining.splice(remaining.findIndex((question) => question.id === best.id), 1);
+    recordCoverage(best, coverage, topicsByParty);
+  }
+}
+
 export function selectBalancedQuestions(statements, requestedSize = 48, rng = Math.random) {
   if (!Array.isArray(statements) || statements.length === 0) return [];
 
@@ -61,49 +150,11 @@ export function selectBalancedQuestions(statements, requestedSize = 48, rng = Ma
   const coverage = new Map(PARTIES.map((party) => [party, 0]));
   const topicsByParty = new Map(PARTIES.map((party) => [party, new Set()]));
 
-  while (selected.length < maxSize && remaining.length) {
-    const availableParties = PARTIES.filter((party) =>
-      remaining.some((question) => partiesForQuestion(question).includes(party)),
-    );
-
-    let candidates = remaining;
-    if (availableParties.length) {
-      const minimumCoverage = Math.min(...availableParties.map((party) => coverage.get(party)));
-      const targetParties = shuffle(
-        availableParties.filter((party) => coverage.get(party) === minimumCoverage),
-        rng,
-      );
-      const targetParty = targetParties[0];
-      candidates = remaining.filter((question) => partiesForQuestion(question).includes(targetParty));
-    }
-
-    let best = null;
-    let bestScore = Number.NEGATIVE_INFINITY;
-    for (const question of shuffle(candidates, rng)) {
-      const parties = partiesForQuestion(question);
-      const topic = question.topic || "övrigt";
-      const score = parties.reduce((sum, party) => {
-        const underRepresentation = 10 / (1 + coverage.get(party));
-        const topicBonus = topicsByParty.get(party).has(topic) ? 0 : 2;
-        return sum + underRepresentation + topicBonus;
-      }, 0);
-
-      if (score > bestScore) {
-        best = question;
-        bestScore = score;
-      }
-    }
-
-    if (!best) best = remaining[0];
-    selected.push(best);
-    remaining.splice(remaining.findIndex((question) => question.id === best.id), 1);
-
-    const topic = best.topic || "övrigt";
-    for (const party of partiesForQuestion(best)) {
-      coverage.set(party, coverage.get(party) + 1);
-      topicsByParty.get(party).add(topic);
-    }
-  }
+  const voteAvailable = remaining.filter(isVoteQuestion).length;
+  const voteTarget = voteAvailable ? Math.min(voteAvailable, Math.max(1, Math.round(maxSize * 0.2))) : 0;
+  chooseBalanced(remaining, selected, voteTarget, coverage, topicsByParty, rng, isVoteQuestion);
+  chooseBalanced(remaining, selected, maxSize, coverage, topicsByParty, rng, (question) => !isVoteQuestion(question));
+  chooseBalanced(remaining, selected, maxSize, coverage, topicsByParty, rng);
 
   return shuffle(selected, rng);
 }

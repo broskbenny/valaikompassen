@@ -1,0 +1,102 @@
+{
+  "version": "0.1.0",
+  "updated": "2026-08-21",
+  "source": "Sveriges riksdag öppna data",
+  "source_url": "https://www.riksdagen.se/sv/dokument-och-lagar/riksdagens-oppna-data/",
+  "scope": {
+    "mandate_period": "2022-2026",
+    "riksmoten": ["2022/23", "2023/24", "2024/25", "2025/26"],
+    "rule": "Only curated substantive roll-call votes where the yes/no direction can be mapped to one concrete policy statement. Procedural votes, ambiguous motion rejections and bundled decisions that cannot be represented faithfully as one answerable proposition are excluded."
+  },
+  "questions": [
+    {
+      "id": "Q-nato-membership",
+      "statement": "Sverige ska vara medlem i Nato.",
+      "topic": "försvar",
+      "type": "position",
+      "merge_program_ids": ["M-2021-006"],
+      "source": {"rm":"2022/23","bet":"UU16","point":1,"date":"2023-03-22","title":"Sveriges medlemskap i Nato","decision":"Utskottets förslag mot reservation 1 (V, MP)","url":"https://data.riksdagen.se/dokument/HA19UU16p1"},
+      "yes_means": "support",
+      "cohesion_threshold": 0.8,
+      "minimum_decisive_votes": 3,
+      "party_tallies": {"S":{"yes":93,"no":0,"abstain":0,"absent":14},"SD":{"yes":64,"no":0,"abstain":0,"absent":9},"M":{"yes":60,"no":0,"abstain":0,"absent":8},"V":{"yes":0,"no":21,"abstain":0,"absent":3},"C":{"yes":21,"no":0,"abstain":0,"absent":3},"KD":{"yes":17,"no":0,"abstain":0,"absent":2},"MP":{"yes":0,"no":16,"abstain":0,"absent":2},"L":{"yes":14,"no":0,"abstain":0,"absent":2}}
+    },
+    {
+      "id": "R-2024-security-zones",
+      "statement": "Polisen ska få införa säkerhetszoner där personer kan kroppsvisiteras och fordon genomsökas för att söka efter vapen.",
+      "topic": "kriminalpolitik",
+      "type": "proposal",
+      "source": {"rm":"2023/24","bet":"JuU13","point":1,"date":"2024-04-10","title":"Säkerhetszoner","decision":"Utskottets förslag mot reservation 1 (S, V, C, MP)","url":"https://data.riksdagen.se/dokument/HB19JuU13p1"},
+      "yes_means": "support",
+      "cohesion_threshold": 0.8,
+      "minimum_decisive_votes": 3,
+      "party_tallies": {"S":{"yes":0,"no":92,"abstain":0,"absent":14},"SD":{"yes":63,"no":0,"abstain":0,"absent":9},"M":{"yes":59,"no":0,"abstain":0,"absent":9},"V":{"yes":0,"no":21,"abstain":0,"absent":3},"C":{"yes":0,"no":21,"abstain":0,"absent":3},"KD":{"yes":14,"no":0,"abstain":0,"absent":5},"MP":{"yes":0,"no":13,"abstain":0,"absent":5},"L":{"yes":14,"no":0,"abstain":0,"absent":2}}
+    },
+    {
+      "id": "R-2024-preventive-area-bans",
+      "statement": "En person som främjar en grupps brottslighet ska kunna förbjudas att vistas i ett avgränsat offentligt område om det finns risk för allvarlig gängrelaterad brottslighet.",
+      "topic": "kriminalpolitik",
+      "type": "proposal",
+      "source": {"rm":"2023/24","bet":"JuU12","point":1,"date":"2024-01-24","title":"Preventiva vistelseförbud","decision":"Utskottets förslag mot reservation 1 (V)","url":"https://data.riksdagen.se/dokument/HB19JuU12p1"},
+      "yes_means": "support",
+      "cohesion_threshold": 0.8,
+      "minimum_decisive_votes": 3,
+      "party_tallies": {"S":{"yes":94,"no":0,"abstain":0,"absent":13},"SD":{"yes":61,"no":0,"abstain":0,"absent":11},"M":{"yes":60,"no":0,"abstain":0,"absent":8},"V":{"yes":0,"no":19,"abstain":0,"absent":5},"C":{"yes":20,"no":0,"abstain":0,"absent":4},"KD":{"yes":16,"no":0,"abstain":0,"absent":3},"MP":{"yes":15,"no":0,"abstain":0,"absent":3},"L":{"yes":12,"no":0,"abstain":0,"absent":4}}
+    },
+    {
+      "id": "R-2024-anonymous-witnesses",
+      "statement": "Vittnen ska kunna lämna uppgifter anonymt i brottmål när det finns påtaglig risk för allvarlig brottslighet mot vittnet eller närstående.",
+      "topic": "kriminalpolitik",
+      "type": "proposal",
+      "source": {"rm":"2024/25","bet":"JuU6","point":1,"date":"2024-11-27","title":"Anonyma vittnen","decision":"Utskottets förslag mot reservation 1 (V, C, MP)","url":"https://data.riksdagen.se/dokument/HC19JuU6p1"},
+      "yes_means": "support",
+      "cohesion_threshold": 0.8,
+      "minimum_decisive_votes": 3,
+      "party_tallies": {"S":{"yes":92,"no":0,"abstain":0,"absent":14},"SD":{"yes":63,"no":0,"abstain":0,"absent":9},"M":{"yes":59,"no":0,"abstain":0,"absent":9},"V":{"yes":0,"no":21,"abstain":0,"absent":3},"C":{"yes":0,"no":21,"abstain":0,"absent":3},"KD":{"yes":15,"no":0,"abstain":0,"absent":4},"MP":{"yes":0,"no":14,"abstain":0,"absent":4},"L":{"yes":15,"no":0,"abstain":0,"absent":1}}
+    },
+    {
+      "id": "R-2023-reduction-obligation-6",
+      "statement": "Reduktionsplikten för bensin och diesel ska sänkas till 6 procent för 2024–2026 och de tidigare beslutade nivåerna för 2027–2030 ska tas bort.",
+      "topic": "klimat",
+      "type": "proposal",
+      "source": {"rm":"2023/24","bet":"MJU5","point":1,"date":"2023-11-30","title":"Sänkning av reduktionsplikten för bensin och diesel","decision":"Utskottets förslag mot reservation 1 (S, V, C, MP)","url":"https://data.riksdagen.se/dokument/HB19MJU5p1"},
+      "yes_means": "support",
+      "cohesion_threshold": 0.8,
+      "minimum_decisive_votes": 3,
+      "party_tallies": {"S":{"yes":0,"no":92,"abstain":0,"absent":15},"SD":{"yes":60,"no":0,"abstain":0,"absent":12},"M":{"yes":58,"no":0,"abstain":0,"absent":10},"V":{"yes":0,"no":19,"abstain":0,"absent":5},"C":{"yes":0,"no":20,"abstain":0,"absent":4},"KD":{"yes":17,"no":0,"abstain":0,"absent":2},"MP":{"yes":0,"no":16,"abstain":0,"absent":2},"L":{"yes":12,"no":0,"abstain":0,"absent":4}}
+    },
+    {
+      "id": "R-2024-free-dental-age-19",
+      "statement": "Avgiftsfri tandvård ska gälla till och med 19 års ålder i stället för 23.",
+      "topic": "sjukvård",
+      "type": "proposal",
+      "source": {"rm":"2024/25","bet":"SoU4","point":1,"date":"2024-11-27","title":"Ändrad åldersgräns för avgiftsfri tandvård","decision":"Utskottets förslag mot reservation 1 (S, V, MP)","url":"https://data.riksdagen.se/dokument/HC19SoU4p1"},
+      "yes_means": "support",
+      "cohesion_threshold": 0.8,
+      "minimum_decisive_votes": 3,
+      "party_tallies": {"S":{"yes":0,"no":92,"abstain":0,"absent":14},"SD":{"yes":63,"no":0,"abstain":0,"absent":9},"M":{"yes":59,"no":0,"abstain":0,"absent":9},"V":{"yes":0,"no":21,"abstain":0,"absent":3},"C":{"yes":21,"no":0,"abstain":0,"absent":3},"KD":{"yes":15,"no":0,"abstain":0,"absent":4},"MP":{"yes":0,"no":14,"abstain":0,"absent":4},"L":{"yes":15,"no":0,"abstain":0,"absent":1}}
+    },
+    {
+      "id": "R-2025-farm-alcohol-sales",
+      "statement": "Småskaliga alkoholproducenter ska få sälja egna alkoholdrycker direkt till besökare på tillverkningsplatsen under särskilda villkor.",
+      "topic": "alkoholpolitik",
+      "type": "proposal",
+      "source": {"rm":"2024/25","bet":"SoU24","point":1,"date":"2025-04-23","title":"Bättre förutsättningar för besöksnäringen i fråga om småskalig produktion av alkoholdrycker","decision":"Utskottets förslag mot reservation 1 (S, V, MP)","url":"https://data.riksdagen.se/dokument/HC19SoU24p1"},
+      "yes_means": "support",
+      "cohesion_threshold": 0.8,
+      "minimum_decisive_votes": 3,
+      "party_tallies": {"S":{"yes":0,"no":93,"abstain":0,"absent":13},"SD":{"yes":62,"no":0,"abstain":0,"absent":10},"M":{"yes":60,"no":0,"abstain":0,"absent":8},"V":{"yes":0,"no":21,"abstain":0,"absent":3},"C":{"yes":1,"no":0,"abstain":19,"absent":4},"KD":{"yes":16,"no":0,"abstain":0,"absent":3},"MP":{"yes":0,"no":15,"abstain":0,"absent":3},"L":{"yes":14,"no":0,"abstain":0,"absent":2}}
+    },
+    {
+      "id": "R-2025-state-support-nuclear",
+      "statement": "Staten ska kunna ge lån och elprissäkringsavtal till företag som investerar i nya kärnkraftsreaktorer.",
+      "topic": "energi",
+      "type": "proposal",
+      "source": {"rm":"2024/25","bet":"NU20","point":1,"date":"2025-05-21","title":"Finansiering och riskdelning vid investeringar i ny kärnkraft","decision":"Utskottets förslag mot reservation 1 (S, V, C, MP)","url":"https://data.riksdagen.se/dokument/HC19NU20p1"},
+      "yes_means": "support",
+      "cohesion_threshold": 0.8,
+      "minimum_decisive_votes": 3,
+      "party_tallies": {"S":{"yes":0,"no":93,"abstain":0,"absent":13},"SD":{"yes":63,"no":0,"abstain":0,"absent":9},"M":{"yes":60,"no":0,"abstain":0,"absent":8},"V":{"yes":0,"no":21,"abstain":0,"absent":3},"C":{"yes":0,"no":21,"abstain":0,"absent":3},"KD":{"yes":16,"no":0,"abstain":0,"absent":3},"MP":{"yes":0,"no":15,"abstain":0,"absent":3},"L":{"yes":14,"no":0,"abstain":0,"absent":2}}
+    }
+  ]
+}
