@@ -1,19 +1,25 @@
 # Statement dataset
 
-`*.jsonl` innehåller en kuraterad första extraktion av sakpolitiska förslag och tydliga ställningstaganden från de åtta riksdagspartiernas senaste officiella långsiktiga grundprogram.
+`*.jsonl` innehåller en kuraterad första extraktion av sakpolitiska förslag och ställningstaganden från de åtta riksdagspartiernas senaste officiella långsiktiga grundprogram.
 
 ## Status
 
 - Datasetversion: `0.1.0`
 - Datum: `2026-08-21`
-- Antal ställningstaganden: **371**
+- Antal råposter: **371**
 - Alla poster har dokument-id, PDF-sida och avsnitt.
 - Alla poster är neutrala parafraser, inte citat.
-- `canonical_issue_id` är ännu `null`: datasetet ska **inte** användas för partimatchning förrän samma sakfrågor har normaliserats och alla partiers positioner kodats.
+- `canonical_issue_id` är ännu `null`: datasetet ska **inte** användas för klassisk partimatchning förrän samma sakfrågor har normaliserats och alla partiers positioner kodats.
+
+## Viktigt: råpost är inte automatiskt kompassfråga
+
+Det här katalogträdet är det breda källspårade råmaterialet. En korrekt programparafras kan fortfarande vara för allmän eller okontroversiell för att fungera som valkompassfråga.
+
+Appen använder därför **inte** alla 371 poster. Godkända kompassfrågor väljs explicit i `../question-bank.json`, där varje fråga har klarat ett hårdare test: den ska uttrycka ett konkret politiskt vägval och ha en rimlig seriös motposition. Plattityder och allmänna mål kan ligga kvar här för käll- och analysändamål utan att exponeras i frågeflödet.
 
 ## Fördelning
 
-| Parti | Antal |
+| Parti | Antal råposter |
 |---|---:|
 | S | 53 |
 | M | 34 |
@@ -24,7 +30,7 @@
 | MP | 50 |
 | L | 51 |
 
-Se `index.json` för ämnes- och typfördelning.
+Se `index.json` för ämnes- och typfördelning och `../question-bank.json` för kompassens handgranskade allowlist.
 
 ## Format
 
@@ -53,8 +59,8 @@ En rad = ett JSON-objekt. Exempel:
 }
 ```
 
-## Appanvändning i nästa steg
+## Appanvändning
 
-Frågetexten kan användas direkt i ett frågekort, men källpartiet bör döljas tills användaren svarat. Slumpningen bör vara stratifierad över parti och ämne så att ett mer detaljerat partiprogram inte dominerar frågeflödet.
+Frågeflödet byggs endast av ID:n i `../question-bank.json`. Källpartiet hålls dolt tills användaren har svarat, och slumpningen stratifieras över parti och ämne så att ett mer detaljerat partiprogram inte dominerar.
 
-För faktisk valmatchning behövs ett separat normaliseringslager. Se `docs/METHODOLOGY.md`.
+För faktisk klassisk valmatchning behövs dessutom ett separat normaliseringslager. Se `../../docs/METHODOLOGY.md`.
