@@ -2,7 +2,7 @@
 
 En källspårbar, partiblind valkompass byggd på de åtta riksdagspartiernas senaste officiella långsiktiga parti-, idé- eller principprogram.
 
-Appen visar ett sakpolitiskt påstående i taget utan att avslöja vilket parti det kommer från. Användaren svarar **mycket dåligt**, **dåligt**, **bra**, **mycket bra** eller **vet ej / ingen åsikt**. Efter svaret kan originalkälla, PDF-sida och avsnitt öppnas.
+Appen visar ett konkret politiskt vägval i taget utan att avslöja vilket parti det kommer från. Användaren svarar **mycket dåligt**, **dåligt**, **bra**, **mycket bra** eller **vet ej / ingen åsikt**. Efter svaret kan originalkälla, PDF-sida och avsnitt öppnas.
 
 ## Kör appen
 
@@ -31,11 +31,44 @@ npm run serve
 - `localStorage` för att fortsätta en avbruten omgång
 - resultat med poäng, svarstäckning och enkel säkerhetsindikator
 - automatiska tester och CI
-- källspårbart rådataset med **371** kuraterade ställningstaganden
+- källspårbart rådataset med **371** kuraterade programrader
+- separat, handgranskad kompassbank med **129** politiskt diskriminerande frågor
 
-## Dataset v0.1
+## Två datalager: råmaterial och kompassfrågor
 
-| Parti | Poster |
+`data/statements/*.jsonl` innehåller den breda, källspårade extraktionen. Alla dessa rader är **inte** automatiskt lämpliga som valkompassfrågor.
+
+Appen får bara använda ID:n som finns i `data/question-bank.json`. Den andra granskningen frågar i praktiken: **finns det en rimlig seriös politisk motposition?** Om en formulering mest säger att vården ska vara bra, skolan hålla hög kvalitet, ekonomin vara stark eller samhället tryggt sorteras den bort om inget konkret politiskt instrument samtidigt anges.
+
+Exempel på frågor som normalt klarar grinden är förbud och tillstånd, skatter och utgifter, ägar- och huvudmannaskap, lagstadgade rättigheter eller skyldigheter, kvalificeringskrav, konkreta nivåer och institutionella förändringar.
+
+Ett uttryckligt regressionsexempel är råposten `M-2021-031`:
+
+> Sjukvården ska präglas av hög kvalitet, god tillgänglighet och valfrihet.
+
+Den är korrekt källspårad men **inte** godkänd för kompassen eftersom den i huvudsak kombinerar allmänt positiva mål. Den ligger därför kvar i råmaterialet men är spärrad från frågebanken och omfattas av regressionstest.
+
+## Frågebank v0.2
+
+Den godkända banken innehåller **129** frågor:
+
+| Parti | Godkända frågor |
+|---|---:|
+| Socialdemokraterna (S) | 16 |
+| Moderaterna (M) | 11 |
+| Sverigedemokraterna (SD) | 16 |
+| Centerpartiet (C) | 16 |
+| Vänsterpartiet (V) | 18 |
+| Kristdemokraterna (KD) | 16 |
+| Miljöpartiet (MP) | 18 |
+| Liberalerna (L) | 18 |
+| **Totalt** | **129** |
+
+Varje parti har minst tio godkända frågor, så 80-frågorsläget kan fortfarande ge exakt tio frågor per parti.
+
+## Rådataset v0.1
+
+| Parti | Råposter |
 |---|---:|
 | Socialdemokraterna (S) | 53 |
 | Moderaterna (M) | 34 |
@@ -47,17 +80,18 @@ npm run serve
 | Liberalerna (L) | 51 |
 | **Totalt** | **371** |
 
-Varje post är en kort neutral parafras och går att spåra till dokument, PDF-sida och avsnitt.
+Varje råpost är en kort neutral parafras och går att spåra till dokument, PDF-sida och avsnitt.
 
 - Källregister: `data/sources.json`
-- Påståenden: `data/statements/*.jsonl`
+- Råpåståenden: `data/statements/*.jsonl`
+- Kompassens allowlist: `data/question-bank.json`
 - Datasetindex: `data/statements/index.json`
 - JSON Schema: `schema/statement.schema.json`
 - Metod: `docs/METHODOLOGY.md`
 
 ## Resultatet: programaffinitet
 
-MVP:n använder ett medvetet försiktigt mått som vi kallar **programaffinitet**.
+Den nuvarande versionen använder ett medvetet försiktigt mått som vi kallar **programaffinitet**.
 
 Svar kodas som:
 
@@ -73,7 +107,7 @@ Det är **inte** ännu en klassisk partinärhetspoäng. Att ett förslag finns i
 
 ## Varför frågorna balanseras
 
-Programmen är olika långa och olika detaljerade. En helt uniform slumpning ur alla 371 rader skulle därför ge mer utrymme åt partier med fler extraherade poster. `selectBalancedQuestions()` ger varje parti samma kvot och försöker samtidigt sprida frågorna över flera ämnen.
+Programmen är olika långa och olika detaljerade. Appen slumpas därför inte ur alla 371 råposter. Den använder endast de 129 godkända frågorna och `selectBalancedQuestions()` ger varje parti samma kvot samtidigt som frågorna sprids över flera ämnen.
 
 ## Källprincip
 
@@ -90,19 +124,21 @@ node --check app.js
 node --check src/core.js
 ```
 
-Samma kontroller körs i GitHub Actions.
+Testerna kontrollerar bland annat att frågebankens ID:n finns i råmaterialet, att varje parti har tillräckligt många frågor för djup-läget och att dokumenterade plattityder inte kan återintroduceras i kompassen. Samma kontroller körs i GitHub Actions.
 
 ## Status
 
 - [x] Register över de åtta officiella grundprogrammen
 - [x] Källspårbart rådataset
 - [x] Kuraterad första extraktion från samtliga åtta program
+- [x] Separat kvalitetsgrind mot plattityder och självklarheter
+- [x] 129 handgranskade politiskt diskriminerande kompassfrågor
 - [x] Balanserad frågesampling
 - [x] Partiblint frågeflöde
 - [x] Programaffinitet och resultatvy
 - [x] Responsiv layout, tangentbordsfokus och reduced-motion-stöd
 - [x] Lokal sessionsåterställning
-- [x] Tester och CI
+- [x] Regressionstester och CI
 - [ ] Andra systematiska genomläsningen för uttömmande täckningsaudit
 - [ ] Normalisering till gemensamma sakfrågor (`canonical_issue_id`)
 - [ ] Kodning av samtliga åtta partiers position på varje gemensam sakfråga
