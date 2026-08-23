@@ -1,0 +1,56 @@
+{
+  "version": "0.1.0",
+  "updated": "2026-08-23",
+  "purpose": "related_issue_clusters",
+  "rule": "Clusters group questions that concern the same political conflict family but are not necessarily semantically identical. Cluster membership never merges questions or party positions; it is used to preserve nuance and reduce accidental overweighting in sampling.",
+  "clusters": [
+    {
+      "id": "nuclear-role-and-expansion",
+      "title": "Kärnkraftens roll och utbyggnad",
+      "question_ids": ["Q-nuclear-free", "R-2025-state-support-nuclear", "R-2026-coastal-nuclear-siting"],
+      "note": "Long-term role, state financing and permitted siting are separate policy choices and must not be collapsed into one answer."
+    },
+    {
+      "id": "school-system-structure",
+      "title": "Skolsystemets styrning, val och utförare",
+      "question_ids": ["Q-state-school", "Q-school-choice", "Q-friskolor", "S-2025-036"],
+      "note": "State responsibility, school choice, independent schools and profit extraction are related but distinct institutional choices."
+    },
+    {
+      "id": "working-time",
+      "title": "Arbetstidens längd",
+      "question_ids": ["V-2024-005", "MP-2025-035"],
+      "note": "A general reduction in working time is not identical to a specified 35-hour legal work week."
+    },
+    {
+      "id": "dental-care-financing",
+      "title": "Tandvårdens finansiering och avgifter",
+      "question_ids": ["Q-dental-healthcare", "R-2024-free-dental-age-19"],
+      "note": "General financing principles and the age limit for free dental care are related but answerable separately."
+    },
+    {
+      "id": "nato-presence-and-weapons",
+      "title": "Nato, utländsk militär närvaro och kärnvapen",
+      "question_ids": ["Q-nato-membership", "Q-foreign-bases", "Q-nuclear-weapons-sweden"],
+      "note": "Membership, permanent foreign bases and nuclear weapons on Swedish territory are separate choices."
+    },
+    {
+      "id": "crime-control-tools",
+      "title": "Brottsbekämpningens preventiva och processuella verktyg",
+      "question_ids": ["R-2024-security-zones", "R-2024-preventive-area-bans", "R-2024-anonymous-witnesses"],
+      "note": "The measures share a civil-liberties versus crime-control dimension but have different legal effects."
+    },
+    {
+      "id": "private-healthcare-role",
+      "title": "Privata aktörers roll i sjukvården",
+      "question_ids": ["Q-private-healthcare", "S-2025-038"],
+      "note": "Whether private providers may deliver tax-funded care is distinct from whether private insurance may confer priority in publicly funded care."
+    },
+    {
+      "id": "labor-migration-model",
+      "title": "Arbetskraftsinvandringens omfattning och modell",
+      "question_ids": ["Q-labor-migration-needs", "C-2013-020"],
+      "note": "A needs test and a generally more open labor-migration regime are related but not equivalent positions."
+    }
+  ]
+}
