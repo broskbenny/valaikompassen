@@ -84,18 +84,25 @@ function isVoteQuestion(question) {
   return (question?.source_kinds || []).includes("riksdag_vote");
 }
 
-function pickBestQuestion(candidates, coverage, topicsByParty, rng) {
+function issueClusterId(question) {
+  return question?.issue_cluster_id || null;
+}
+
+function pickBestQuestion(candidates, coverage, topicsByParty, clusterUse, rng) {
   let best = null;
   let bestScore = Number.NEGATIVE_INFINITY;
 
   for (const question of shuffle(candidates, rng)) {
     const parties = partiesForQuestion(question);
     const topic = question.topic || "övrigt";
-    const score = parties.reduce((sum, party) => {
+    const partyScore = parties.reduce((sum, party) => {
       const underRepresentation = 10 / (1 + coverage.get(party));
       const topicBonus = topicsByParty.get(party).has(topic) ? 0 : 2;
       return sum + underRepresentation + topicBonus;
     }, 0);
+    const clusterId = issueClusterId(question);
+    const clusterPenalty = clusterId ? 8 * (clusterUse.get(clusterId) || 0) : 0;
+    const score = partyScore - clusterPenalty;
 
     if (score > bestScore) {
       best = question;
@@ -106,15 +113,17 @@ function pickBestQuestion(candidates, coverage, topicsByParty, rng) {
   return best || candidates[0] || null;
 }
 
-function recordCoverage(question, coverage, topicsByParty) {
+function recordCoverage(question, coverage, topicsByParty, clusterUse) {
   const topic = question.topic || "övrigt";
   for (const party of partiesForQuestion(question)) {
     coverage.set(party, coverage.get(party) + 1);
     topicsByParty.get(party).add(topic);
   }
+  const clusterId = issueClusterId(question);
+  if (clusterId) clusterUse.set(clusterId, (clusterUse.get(clusterId) || 0) + 1);
 }
 
-function chooseBalanced(remaining, selected, targetCount, coverage, topicsByParty, rng, predicate = () => true) {
+function chooseBalanced(remaining, selected, targetCount, coverage, topicsByParty, clusterUse, rng, predicate = () => true) {
   while (selected.length < targetCount) {
     const eligible = remaining.filter(predicate);
     if (!eligible.length) break;
@@ -133,12 +142,31 @@ function chooseBalanced(remaining, selected, targetCount, coverage, topicsByPart
       candidates = eligible.filter((question) => partiesForQuestion(question).includes(targetParty));
     }
 
-    const best = pickBestQuestion(candidates, coverage, topicsByParty, rng);
+    const best = pickBestQuestion(candidates, coverage, topicsByParty, clusterUse, rng);
     if (!best) break;
     selected.push(best);
     remaining.splice(remaining.findIndex((question) => question.id === best.id), 1);
-    recordCoverage(best, coverage, topicsByParty);
+    recordCoverage(best, coverage, topicsByParty, clusterUse);
   }
+}
+
+export function spreadQuestionClusters(items, rng = Math.random) {
+  const remaining = shuffle(items, rng);
+  const ordered = [];
+  let previousCluster = null;
+
+  while (remaining.length) {
+    let index = remaining.findIndex((question) => {
+      const clusterId = issueClusterId(question);
+      return !clusterId || clusterId !== previousCluster;
+    });
+    if (index < 0) index = 0;
+    const [next] = remaining.splice(index, 1);
+    ordered.push(next);
+    previousCluster = issueClusterId(next);
+  }
+
+  return ordered;
 }
 
 export function selectBalancedQuestions(statements, requestedSize = 48, rng = Math.random) {
@@ -149,14 +177,15 @@ export function selectBalancedQuestions(statements, requestedSize = 48, rng = Ma
   const selected = [];
   const coverage = new Map(PARTIES.map((party) => [party, 0]));
   const topicsByParty = new Map(PARTIES.map((party) => [party, new Set()]));
+  const clusterUse = new Map();
 
   const voteAvailable = remaining.filter(isVoteQuestion).length;
   const voteTarget = voteAvailable ? Math.min(voteAvailable, Math.max(1, Math.round(maxSize * 0.2))) : 0;
-  chooseBalanced(remaining, selected, voteTarget, coverage, topicsByParty, rng, isVoteQuestion);
-  chooseBalanced(remaining, selected, maxSize, coverage, topicsByParty, rng, (question) => !isVoteQuestion(question));
-  chooseBalanced(remaining, selected, maxSize, coverage, topicsByParty, rng);
+  chooseBalanced(remaining, selected, voteTarget, coverage, topicsByParty, clusterUse, rng, isVoteQuestion);
+  chooseBalanced(remaining, selected, maxSize, coverage, topicsByParty, clusterUse, rng, (question) => !isVoteQuestion(question));
+  chooseBalanced(remaining, selected, maxSize, coverage, topicsByParty, clusterUse, rng);
 
-  return shuffle(selected, rng);
+  return spreadQuestionClusters(selected, rng);
 }
 
 export function computePartyResults(questions, answers) {
