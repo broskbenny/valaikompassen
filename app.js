@@ -21,12 +21,13 @@ const PARTY_NAMES = {
 };
 
 const TYPE_NAMES = { proposal: "Förslag", position: "Ställningstagande" };
-const STORAGE_KEY = "valaikompassen.session.v4";
+const STORAGE_KEY = "valaikompassen.session.v5";
 
 const state = {
   statements: [],
   sources: [],
   riksdagen: null,
+  issueClusters: null,
   questions: [],
   answers: {},
   index: 0,
@@ -57,9 +58,7 @@ function unique(values) {
 
 function assertNoPositionConflict(id, support, oppose) {
   const overlap = support.filter((party) => oppose.includes(party));
-  if (overlap.length) {
-    throw new Error(`${id} har motstridiga källpositioner för: ${overlap.join(", ")}`);
-  }
+  if (overlap.length) throw new Error(`${id} har motstridiga källpositioner för: ${overlap.join(", ")}`);
 }
 
 function buildQuestionBank(questionBank, rawStatements, voteData) {
@@ -78,18 +77,10 @@ function buildQuestionBank(questionBank, rawStatements, voteData) {
   ];
   const missingIds = unique(referencedIds.filter((id) => !rawById.has(id)));
 
-  if (missingIds.length) {
-    throw new Error(`Frågebanken hänvisar till saknade källrader: ${missingIds.join(", ")}`);
-  }
-  if (new Set(singletonIds).size !== singletonIds.length) {
-    throw new Error("Frågebanken innehåller dubbla singleton-id:n.");
-  }
-  if (new Set(canonicalQuestions.map((question) => question.id)).size !== canonicalQuestions.length) {
-    throw new Error("Frågebanken innehåller dubbla canonical-id:n.");
-  }
-  if (new Set(voteQuestions.map((question) => question.id)).size !== voteQuestions.length) {
-    throw new Error("Voteringsbanken innehåller dubbla fråge-id:n.");
-  }
+  if (missingIds.length) throw new Error(`Frågebanken hänvisar till saknade källrader: ${missingIds.join(", ")}`);
+  if (new Set(singletonIds).size !== singletonIds.length) throw new Error("Frågebanken innehåller dubbla singleton-id:n.");
+  if (new Set(canonicalQuestions.map((question) => question.id)).size !== canonicalQuestions.length) throw new Error("Frågebanken innehåller dubbla canonical-id:n.");
+  if (new Set(voteQuestions.map((question) => question.id)).size !== voteQuestions.length) throw new Error("Voteringsbanken innehåller dubbla fråge-id:n.");
 
   const singletonQuestions = singletonIds.map((id) => {
     const row = rawById.get(id);
@@ -112,7 +103,6 @@ function buildQuestionBank(questionBank, rawStatements, voteData) {
     const supportParties = unique(supportRows.map((row) => row.source_party));
     const opposeParties = unique(opposeRows.map((row) => row.source_party));
     assertNoPositionConflict(question.id, supportParties, opposeParties);
-
     return {
       id: question.id,
       statement: question.statement,
@@ -132,7 +122,6 @@ function buildQuestionBank(questionBank, rawStatements, voteData) {
     const mergedRows = (vote.merge_program_ids || []).map((id) => rawById.get(id));
     const mergedProgramParties = unique(mergedRows.map((row) => row.source_party));
     const existing = byId.get(vote.id);
-
     const support = unique([
       ...(existing?.position_parties?.support || []),
       ...mergedProgramParties,
@@ -162,27 +151,48 @@ function buildQuestionBank(questionBank, rawStatements, voteData) {
   return [...byId.values()];
 }
 
+function applyIssueClusters(questions, clusterData) {
+  const byId = new Map(questions.map((question) => [question.id, question]));
+  const membership = new Map();
+
+  for (const cluster of clusterData?.clusters || []) {
+    for (const questionId of cluster.question_ids || []) {
+      const question = byId.get(questionId);
+      if (!question) throw new Error(`${cluster.id} hänvisar till saknad synlig fråga: ${questionId}`);
+      if (membership.has(questionId)) {
+        throw new Error(`${questionId} ligger i både ${membership.get(questionId)} och ${cluster.id}`);
+      }
+      membership.set(questionId, cluster.id);
+      question.issue_cluster_id = cluster.id;
+      question.issue_cluster_title = cluster.title;
+    }
+  }
+
+  return questions;
+}
+
 async function loadData() {
   try {
-    const [sourceResponse, questionBank, voteData, ...statementTexts] = await Promise.all([
+    const [sourceResponse, questionBank, voteData, clusterData, ...statementTexts] = await Promise.all([
       fetchJson("data/sources.json"),
       fetchJson("data/question-bank.json"),
       fetchJson("data/riksdagen/votes.json"),
+      fetchJson("data/issue-clusters.json"),
       ...PARTIES.map((party) => fetchText(`data/statements/${party}.jsonl`)),
     ]);
 
-    const rawStatements = statementTexts
-      .flatMap(parseJsonLines)
-      .filter((row) => row.review?.status !== "rejected");
-
+    const rawStatements = statementTexts.flatMap(parseJsonLines).filter((row) => row.review?.status !== "rejected");
     state.sources = sourceResponse.sources || [];
     state.riksdagen = voteData;
+    state.issueClusters = clusterData;
     state.rawStatementCount = rawStatements.length;
-    state.questionBankVersion = `${questionBank.version || "unknown"}+riksdag-${voteData.version || "unknown"}`;
-    state.statements = buildQuestionBank(questionBank, rawStatements, voteData);
+    state.questionBankVersion = `${questionBank.version || "unknown"}+riksdag-${voteData.version || "unknown"}+clusters-${clusterData.version || "unknown"}`;
+    state.statements = applyIssueClusters(buildQuestionBank(questionBank, rawStatements, voteData), clusterData);
     state.loaded = true;
+
     const voteCount = voteData.questions?.length || 0;
-    $("#load-status").textContent = `${state.statements.length} unika sakfrågor laddade från ${state.rawStatementCount} programrader och ${voteCount} handgranskade riksdagsomröstningar.`;
+    const clusterCount = clusterData.clusters?.length || 0;
+    $("#load-status").textContent = `${state.statements.length} unika sakfrågor laddade från ${state.rawStatementCount} programrader och ${voteCount} handgranskade riksdagsomröstningar. ${clusterCount} frågefamiljer hjälper urvalet att sprida närliggande men skilda vägval.`;
     $("#start-button").disabled = false;
     renderSourceList();
     offerResume();
@@ -202,7 +212,7 @@ function setView(name) {
 function saveSession() {
   if (!state.sessionId || !state.questions.length) return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    version: 4,
+    version: 5,
     questionBankVersion: state.questionBankVersion,
     sessionId: state.sessionId,
     questionIds: state.questions.map((q) => q.id),
@@ -223,7 +233,7 @@ function readSavedSession() {
 
 function offerResume() {
   const saved = readSavedSession();
-  const canResume = saved?.version === 4
+  const canResume = saved?.version === 5
     && saved?.questionBankVersion === state.questionBankVersion
     && saved?.questionIds?.length
     && saved.questionIds.some((id) => state.statements.some((q) => q.id === id));
@@ -244,7 +254,7 @@ function startSession() {
 
 function resumeSession() {
   const saved = readSavedSession();
-  if (!saved || saved.version !== 4 || saved.questionBankVersion !== state.questionBankVersion) return;
+  if (!saved || saved.version !== 5 || saved.questionBankVersion !== state.questionBankVersion) return;
   const byId = new Map(state.statements.map((q) => [q.id, q]));
   state.questions = saved.questionIds.map((id) => byId.get(id)).filter(Boolean);
   state.answers = saved.answers || {};
@@ -257,7 +267,6 @@ function resumeSession() {
 function renderQuestion() {
   const question = state.questions[state.index];
   if (!question) return showResults();
-
   const answered = state.answers[question.id];
   $("#progress-label").textContent = `${state.index + 1} / ${state.questions.length}`;
   $("#progress-bar").style.width = `${((state.index + 1) / state.questions.length) * 100}%`;
@@ -345,9 +354,13 @@ function renderQuestionSource(question) {
   const intro = sourceCount > 1
     ? "Frågan kan ha stöd i flera källor. Varje källa visas separat; flera källor ger inte extra vikt i poängen."
     : "Källa och underlag:";
+  const clusterNote = question.issue_cluster_title
+    ? `<p><strong>Relaterad frågefamilj:</strong> ${escapeHtml(question.issue_cluster_title)}. Frågan är grupperad med närliggande vägval för att undvika övervikt, men den är inte sammanslagen med dem och poängsätts som ett eget beslut.</p>`
+    : "";
 
   $("#source-content").innerHTML = `
     <p>${escapeHtml(intro)}</p>
+    ${clusterNote}
     ${renderSourceRows(supportRows, "Programkällor som stödjer påståendet")}
     ${renderSourceRows(opposeRows, "Programkällor som motsätter sig påståendet")}
     ${voteRows.map(renderVoteSource).join("")}
@@ -455,9 +468,7 @@ $("#show-results-early").addEventListener("click", showResults);
 $("#restart-button").addEventListener("click", () => { localStorage.removeItem(STORAGE_KEY); showHome(); startSession(); });
 $("#source-details").addEventListener("toggle", (event) => {
   const current = state.questions[state.index];
-  if (event.currentTarget.open && current && !state.answers[current.id]) {
-    event.currentTarget.open = false;
-  }
+  if (event.currentTarget.open && current && !state.answers[current.id]) event.currentTarget.open = false;
 });
 
 $("#start-button").disabled = true;

@@ -17,72 +17,87 @@ python3 -m http.server 8000
 
 Öppna `http://localhost:8000`. Alternativt: `npm run serve`.
 
-## Vad som ingår
+## Nuvarande omfattning
 
-- 24, 48 eller 80 unika sakfrågor per omgång
-- partiblint frågeflöde
-- kvalitetsgrind mot plattityder, abstrakta maximer och självrättfärdigande formuleringar
-- sammanslagning av semantiskt likvärdiga frågor mellan partier och källtyper
-- explicit `support`/`oppose` när positionen kan beläggas
 - **371** källspårade programrader
-- programbank v0.3 med **99** unika frågor före sammanfogning med voteringslagret
-- första voteringsbank med **8** handgranskade direkta riksdagsomröstningar
-- Nato-frågan sammanfogas med befintlig programkälla, så den kombinerade banken innehåller **106 unika sakfrågor**
-- källstödd sakfrågematchning där samma fråga aldrig får extra vikt bara för att den har flera källor
-- source-aware sampling: direkta voteringsfrågor kompletterar programmaterialet utan att dominera en omgång
-- lokal sessionsåterställning
-- automatiska validatorer, regressionstester och CI
+- programbank v0.3 med **99** unika programbaserade sakfrågor
+- voteringsbank v0.2 med **11** manuellt granskade direkta riksdagsomröstningar
+- Nato-voteringen sammanfogas med en redan existerande programfråga
+- totalt **109 unika synliga sakfrågor** i den kombinerade banken
+- **8 relaterade frågefamiljer** som hjälper urvalet att sprida närliggande men separata politiska beslut
+- 24, 48 eller 80 frågor per omgång
 
-## Fyra lager
+## Fem lager
 
-### 1. Programmens råmaterial
+### 1. Programrådata
 
-`data/statements/*.jsonl` innehåller 371 källspårade programparafraser. En korrekt programparafras är inte automatiskt en bra valkompassfråga.
+`data/statements/*.jsonl` innehåller den breda källspårade programutvinningen. En korrekt programparafras är inte automatiskt en bra valkompassfråga.
 
-### 2. Programmens kvalitetsgrind
+### 2. Kvalitetsgrinden
 
-`data/question-bank.json` innehåller den hårdare programbaserade frågebanken. En fråga måste innebära ett verkligt politiskt val där en seriös motposition är möjlig. Formuleringar som “hög kvalitet”, “lika bra eller bättre”, “nödvändigt” eller “effektivt” får inte bära själva argumentet för svaret.
+`data/question-bank.json` innehåller den hårdare programbaserade frågebanken. En fråga måste innebära ett verkligt politiskt val där en seriös motposition är möjlig. Plattityder, abstrakta maximer och självrättfärdigande villkor sorteras bort.
 
-Exempel på råposter som medvetet är spärrade:
+### 3. Canonical-frågor: bara verkligt samma sak
 
-> Det offentliga ska inte utföra uppgifter som andra kan göra lika bra eller bättre.
+När flera källor uttrycker samma politiska kärna kan de sammanföras till en enda synlig fråga. Det gäller även när samma sak finns både i ett program och i en faktisk riksdagsvotering. Flera källor ger aldrig extra poängvikt.
 
-> Sjukvården ska präglas av hög kvalitet, god tillgänglighet och valfrihet.
+Om två källor skulle koda samma parti på motsatta sidor av exakt samma fråga stoppas sammanslagningen för manuell granskning.
 
-### 3. Gemensamma canonical-frågor
+### 4. Relaterade frågefamiljer: lika område, olika beslut
 
-När flera partier uttrycker samma sak ställs frågan en gång. Viktiga nyanser visas i källorna efter svaret. Uttryckligt motstånd kan kodas på samma fråga i stället för att skapa en spegelvänd dubblett.
+`data/issue-clusters.json` löser ett annat problem. Två frågor kan vara tydligt relaterade utan att vara semantiskt identiska.
 
-### 4. Direkta riksdagsomröstningar
+Exempel: kärnkraftens långsiktiga roll, statlig finansiering av nya reaktorer och vilka kustområden som får användas för kärntekniska anläggningar hör till samma konfliktfamilj men är tre olika politiska beslut. De får därför **inte** slås ihop.
 
-`data/riksdagen/votes.json` innehåller den manuellt granskade voteringsbanken. Den första versionen använder åtta konkreta sakvoteringar från mandatperioden 2022–2026, bland annat Nato, säkerhetszoner, preventiva vistelseförbud, anonyma vittnen, reduktionsplikt, tandvård, gårdsförsäljning och finansiering av ny kärnkraft.
+Frågefamiljerna används som en diversitetsbroms i sampling:
 
-En rå `Ja`-röst betyder **inte automatiskt** att partiet stödjer valkompassens formulering. För varje kandidat granskas den exakta förslagspunkten och motförslaget. Procedurfrågor, tvetydiga avslagsvoteringar och beslutspaket som inte går att återge troget i en enda fråga tas bort.
+- en redan använd frågefamilj får en mjuk urvalsnackdel,
+- frågor från samma familj läggs inte direkt efter varandra när det går att undvika,
+- partipositioner, formuleringar och poäng förblir helt separata.
 
-Detaljer: `docs/RIKSDAGEN_OPEN_DATA.md`.
+Detta minskar risken att ett område väger tyngre bara för att Riksdagen råkat votera många gånger om närliggande frågor.
 
-## Hur partipositioner räknas från en votering
+### 5. Direkta riksdagsomröstningar
 
-Partiets ledamöter kan rösta `Ja`, `Nej`, `Avstår` eller vara `Frånvarande`.
+`data/riksdagen/votes.json` innehåller den manuellt granskade voteringsbanken. Version 0.2 innehåller elva sakvoteringar, bland annat:
 
-En voteringsposition kodas bara när:
+- Nato-medlemskap
+- säkerhetszoner
+- preventiva vistelseförbud
+- anonyma vittnen
+- reduktionsplikten
+- åldersgränsen för avgiftsfri tandvård
+- gårdsförsäljning
+- statlig finansiering/riskdelning för ny kärnkraft
+- fler tillåtna kustområden för kärnkraft
+- sänkt straffbarhetsålder till 14 år för allvarliga brott
+- brottet missbruk av offentlig ställning
+
+De tre sistnämnda är nya direkta beslutspunkter från riksmötet 2025/26.
+
+## Parlamentarisk tolkningsregel
+
+En rå `Ja`-röst betyder **inte automatiskt** att partiet stödjer vilken sakpolitisk parafras som helst. För varje kandidat granskas den exakta förslagspunkten och motförslaget.
+
+Procedurfrågor, tvetydiga avslagsvoteringar och beslutspaket som inte går att återge troget som en enda besvarbar fråga tas bort. `data/riksdagen/votes.json` dokumenterar även exempel på aktuella voteringar som uttryckligen har underkänts av detta skäl.
+
+Partiets voteringsposition kodas bara när:
 
 - minst 3 ledamöter från partiet har röstat Ja eller Nej, och
 - minst 80 % av de avgivna Ja/Nej-rösterna går åt samma håll.
 
-Avstående och frånvaro blir aldrig automatiskt en position. En splittrad eller huvudsakligen avstående partigrupp lämnas okodad. I gårdsförsäljningsvoteringen lämnas exempelvis Centerpartiet okodat i stället för att en enda Ja-röst bland många avståenden görs till partiposition.
-
-## Samma fråga från program och votering
-
-Källor multiplicerar inte frågor eller poäng. Nato är ett exempel: Moderaternas programkälla och den direkta riksdagsvoteringen samlas på samma sakfråga.
-
-Om program och votering skulle koda samma parti på motsatta sidor av exakt samma fråga kastar databyggaren ett fel. Konflikten måste granskas manuellt; appen väljer aldrig tyst en källa framför en annan.
+Avstående och frånvaro blir aldrig automatiskt en position. En splittrad eller huvudsakligen avstående partigrupp lämnas okodad.
 
 ## Sampling
 
-Programbankens olika källtäckning används fortfarande utan hårda partikvoter. Den nya voteringskällan har dessutom en avgränsad målandel i urvalet: ungefär 20 % när tillräckligt många voteringsfrågor finns. Med den första banken innebär det 5 direkta voteringsfrågor i en 24-frågorsomgång och samtliga 8 i 48- och 80-frågorslägena.
+Urvalet balanserar flera saker samtidigt:
 
-När voteringsbanken växer kommer samma regel förhindra att hundratals riksdagsvoteringar tränger undan de långsiktiga programfrågorna.
+1. källkodad partit­äckning,
+2. ämnesvariation,
+3. en avgränsad andel direkta voteringsfrågor, ungefär 20 % när materialet räcker,
+4. variation mellan relaterade frågefamiljer.
+
+Frågekvaliteten sänks aldrig för att fylla en partikvot eller en källkvot.
 
 ## Resultatet
 
@@ -94,21 +109,17 @@ Svar kodas som:
 - mycket bra = `+2`
 - vet ej = exkluderas
 
-För en belagd stödposition används värdet direkt; för explicit motstånd vänds tecknet. Om ett parti saknar en källkodad position påverkas partiets poäng inte alls. Varje sakfråga räknas högst en gång per parti även om både program och votering stödjer samma kodning.
-
-Medelvärdet per parti skalas till `0–100`. Resultatvyn visar samtidigt hur många källkodade positioner som faktiskt ligger bakom poängen.
+För en belagd stödposition används värdet direkt; för explicit motstånd vänds tecknet. Om ett parti saknar en källkodad position påverkas partiets poäng inte alls. Varje sakfråga räknas högst en gång per parti även om flera källor belägger samma position.
 
 ## Riksdagens rådata: ingest, inte automatisk publicering
 
-`scripts/sync_riksdagen_votes.py` kan ladda ned riksdagens voteringsdataset och bygga en kandidatlista för 2022/23–2025/26. Kandidatlistan är **inte** en frågebank och kopplas aldrig automatiskt till appen.
-
-Exempel:
+`scripts/sync_riksdagen_votes.py` kan hämta riksdagens voteringsdataset och bygga kandidatlistor för 2022/23–2025/26. Kandidatlistan kopplas **aldrig automatiskt** till den publika frågebanken.
 
 ```bash
 python3 scripts/sync_riksdagen_votes.py --rm 2025/26 --output /tmp/voteringar-202526.json
 ```
 
-Varje kandidat måste därefter granskas mot förslagspunkten och motförslaget innan den kan läggas i `data/riksdagen/votes.json`.
+Varje kandidat måste därefter granskas mot förslagspunkten och motförslaget.
 
 ## Data och dokumentation
 
@@ -116,16 +127,16 @@ Varje kandidat måste därefter granskas mot förslagspunkten och motförslaget 
 - Programrådata: `data/statements/*.jsonl`
 - Program/canonical-bank: `data/question-bank.json`
 - Kuraterade riksdagsvoteringar: `data/riksdagen/votes.json`
+- Relaterade frågefamiljer: `data/issue-clusters.json`
 - Voteringsmetod: `docs/RIKSDAGEN_OPEN_DATA.md`
 - Övergripande metod: `docs/METHODOLOGY.md`
-- Datasetindex: `data/statements/index.json`
-- JSON Schema: `schema/statement.schema.json`
 
 ## Test och validering
 
 ```bash
 python3 scripts/validate_dataset.py
 python3 scripts/validate_riksdagen_votes.py
+python3 scripts/validate_issue_clusters.py
 npm test
 node --check app.js
 node --check src/core.js
@@ -137,14 +148,17 @@ CI kör samma kontroller vid pull requests och på `main`.
 
 - [x] Källspårbart programdataset
 - [x] Kvalitetsgrind mot plattityder och självrättfärdigande formuleringar
-- [x] Canonical-frågor som sammanför överlappande programpositioner
+- [x] Canonical-frågor som sammanför verkligt likvärdiga positioner
 - [x] Källstödd stöd-/motståndskodning
-- [x] Första kuraterade lagret av direkta riksdagsvoteringar
+- [x] Kuraterat lager av direkta riksdagsvoteringar
+- [x] 2025/26-voteringar med separata, tydligt tolkbara beslutspunkter
 - [x] Partikohesionsregel för voteringsdata
 - [x] Program/votering-sammanslagning utan dubbel vikt
+- [x] Relaterade frågefamiljer utan semantisk sammanblandning
+- [x] Klustermedveten sampling som minskar sakområdesövervikt
 - [x] Ingestverktyg för Riksdagens öppna voteringsdataset
-- [x] Validatorer, tester och CI
-- [ ] Systematisk genomgång av alla relevanta sakvoteringar 2022–2026
+- [x] Validatorer, regressionstester och CI
+- [ ] Fortsatt systematisk genomgång av relevanta sakvoteringar 2022–2026
 - [ ] Fullare canonical-kodning av alla åtta partier på varje relevant sakfråga
 - [ ] Kalibrering/viktning för en komplett traditionell valkompassmodell
 

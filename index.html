@@ -24,7 +24,7 @@
     <section id="start-view" class="view hero-view" aria-labelledby="start-title">
       <p class="eyebrow">Riksdagsvalet 2026</p>
       <h1 id="start-title">Tyck om sakpolitiken<br><span>innan du ser partiet.</span></h1>
-      <p class="lead">Du får konkreta politiska vägval med källstöd i partiernas långsiktiga program och i utvalda direkta omröstningar i riksdagen under mandatperioden 2022–2026. Samma sakfråga ställs bara en gång och partierna hålls dolda medan du svarar.</p>
+      <p class="lead">Du får konkreta politiska vägval med källstöd i partiernas långsiktiga program och i utvalda direkta omröstningar i riksdagen under mandatperioden 2022–2026. Exakt samma sakfråga ställs bara en gång; när frågor bara är närbesläktade behålls de separata och grupperas i en frågefamilj.</p>
 
       <div class="start-grid">
         <div class="start-card">
@@ -49,8 +49,8 @@
 
         <aside class="method-card" aria-label="Så fungerar det">
           <div><span class="method-number">01</span><p>Bara frågor med ett konkret politiskt vägval och en rimlig motposition.</p></div>
-          <div><span class="method-number">02</span><p>Program och faktiska riksdagsröster kan ge källstöd till samma fråga utan att den räknas dubbelt.</p></div>
-          <div><span class="method-number">03</span><p>Resultatet använder bara partipositioner som kan beläggas direkt i källmaterialet.</p></div>
+          <div><span class="method-number">02</span><p>Identiska frågor slås ihop. Närliggande men olika beslut grupperas utan att nyansen försvinner.</p></div>
+          <div><span class="method-number">03</span><p>Resultatet använder bara partipositioner som kan beläggas direkt i program eller faktiska voteringar.</p></div>
         </aside>
       </div>
       <p id="load-status" class="load-status" role="status">Laddar källmaterial…</p>
@@ -120,17 +120,26 @@
         <article>
           <h2>Från källa till fråga</h2>
           <p>En formulering får bara bli fråga om den innehåller ett konkret politiskt val och det finns en rimlig seriös motposition. Plattityder, självrättfärdigande villkor och vaga principer sorteras bort även om de är korrekt återgivna ur en källa.</p>
+
           <h2>Riksdagsomröstningar</h2>
           <p>En rå Ja-röst är inte automatiskt ett sakpolitiskt Ja. Riksdagen röstar om en bestämd förslagspunkt, ofta utskottets förslag mot en reservation. Därför läser vi vad just den förslagspunkten och motförslaget innebär innan voteringen får bli en kompassfråga. Procedurfrågor, tvetydiga avslagsvoteringar och beslutspaket som inte kan återges troget i en enda besvarbar fråga tas inte med.</p>
           <p>Partiets position hämtas från ledamöternas faktiska röster. Minst tre ledamöter måste ha röstat Ja eller Nej och minst 80 procent av dessa avgivna ja/nej-röster måste gå åt samma håll. Avstående och frånvaro räknas inte som ställningstagande. En splittrad partigrupp lämnas okodad på den frågan.</p>
-          <h2>Gemensamma sakfrågor</h2>
+
+          <h2>Exakt sammanslagning</h2>
           <p>När program och voteringar beskriver samma politiska kärna ställs frågan bara en gång. Efter svaret visas källorna separat. Om två källor skulle ge motsatt position för samma parti på exakt samma fråga stoppas sammanslagningen för manuell granskning i stället för att en källa väljs tyst.</p>
+
+          <h2>Relaterade frågefamiljer</h2>
+          <p>Att två frågor handlar om samma konfliktområde betyder inte att de är samma fråga. Kärnkraftens långsiktiga roll, statlig finansiering av nya reaktorer och vilka kustområden som får användas är exempelvis tre separata beslut. Sådana frågor märks som en gemensam frågefamilj men behåller egna formuleringar, källor, partipositioner och poäng.</p>
+          <p>Frågefamiljen används som en diversitetsbroms i urvalet: när flera närliggande frågor finns prioriteras andra områden innan ytterligare en fråga ur samma familj. Frågorna slås alltså inte ihop bara för att de korrelerar politiskt.</p>
+
           <h2>Urvalet i en omgång</h2>
-          <p>Algoritmen försöker ge jämn källtäckning mellan partier och ämnen. Direkta voteringsfrågor får en avgränsad andel av en normal omgång så att den nya källtypen kompletterar i stället för att tränga undan programmaterialet. Frågekvaliteten sänks aldrig för att fylla en partikvot.</p>
+          <p>Algoritmen försöker ge jämn källtäckning mellan partier och ämnen. Direkta voteringsfrågor får en avgränsad andel av en normal omgång så att den nya källtypen kompletterar i stället för att tränga undan programmaterialet. Närliggande frågor sprids med hjälp av frågefamiljer och placeras inte intill varandra när det går att undvika. Frågekvaliteten sänks aldrig för att fylla en partikvot.</p>
+
           <h2>Poängen</h2>
           <p>Mycket dåligt = −2, dåligt = −1, bra = +1 och mycket bra = +2. “Vet ej” räknas inte in. För ett parti som belagt stödjer påståendet används svaret direkt; för uttryckligt motstånd vänds tecknet. Varje sakfråga räknas högst en gång per parti även om flera källor belägger samma position.</p>
+
           <h2>Begränsningen</h2>
-          <p>Voteringslagret är en kuraterad första uppsättning, inte alla omröstningar under mandatperioden. Projektet innehåller ett separat ingestflöde som kan hämta Riksdagens rådata, men nya voteringskandidater exponeras inte automatiskt innan den parlamentariska innebörden har granskats.</p>
+          <p>Voteringslagret är kuraterat, inte en automatisk spegling av alla omröstningar under mandatperioden. Projektets ingestflöde kan hämta Riksdagens rådata, men nya voteringskandidater exponeras inte innan den parlamentariska innebörden har granskats. Ett beslutspaket med flera politiska förändringar utesluts hellre än att en enskild del tillskrivs alla som röstade för paketet.</p>
         </article>
       </div>
     </section>

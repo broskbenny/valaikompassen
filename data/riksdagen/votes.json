@@ -1,6 +1,6 @@
 {
-  "version": "0.1.0",
-  "updated": "2026-08-21",
+  "version": "0.2.0",
+  "updated": "2026-08-23",
   "source": "Sveriges riksdag öppna data",
   "source_url": "https://www.riksdagen.se/sv/dokument-och-lagar/riksdagens-oppna-data/",
   "scope": {
@@ -8,6 +8,20 @@
     "riksmoten": ["2022/23", "2023/24", "2024/25", "2025/26"],
     "rule": "Only curated substantive roll-call votes where the yes/no direction can be mapped to one concrete policy statement. Procedural votes, ambiguous motion rejections and bundled decisions that cannot be represented faithfully as one answerable proposition are excluded."
   },
+  "excluded_examples": [
+    {
+      "reference": "2025/26:JuU48 p1",
+      "reason": "A large criminal-sanctions package spanning many distinct legal changes; the roll call cannot safely prove support for any one isolated component."
+    },
+    {
+      "reference": "2025/26:JuU42 p1",
+      "reason": "A multi-law criminal-penalty package; politically important but too bundled to paraphrase as one precise compass statement."
+    },
+    {
+      "reference": "2025/26:NU24 p2",
+      "reason": "A motion-rejection vote with multiple reservation directions and heavy abstention by S; point 1 provides the cleaner direct vote on the legal change."
+    }
+  ],
   "questions": [
     {
       "id": "Q-nato-membership",
@@ -97,6 +111,39 @@
       "cohesion_threshold": 0.8,
       "minimum_decisive_votes": 3,
       "party_tallies": {"S":{"yes":0,"no":93,"abstain":0,"absent":13},"SD":{"yes":63,"no":0,"abstain":0,"absent":9},"M":{"yes":60,"no":0,"abstain":0,"absent":8},"V":{"yes":0,"no":21,"abstain":0,"absent":3},"C":{"yes":0,"no":21,"abstain":0,"absent":3},"KD":{"yes":16,"no":0,"abstain":0,"absent":3},"MP":{"yes":0,"no":15,"abstain":0,"absent":3},"L":{"yes":14,"no":0,"abstain":0,"absent":2}}
+    },
+    {
+      "id": "R-2026-coastal-nuclear-siting",
+      "statement": "Förbuden mot kärntekniska anläggningar i flera utpekade kustområden ska tas bort så att kärnkraft kan byggas på fler platser.",
+      "topic": "energi",
+      "type": "proposal",
+      "source": {"rm":"2025/26","bet":"NU24","point":1,"date":"2026-06-15","title":"Ny kärnkraft i Sverige – fler möjliga platser vid kusten","decision":"Utskottets förslag mot reservation 1 (S, V, C, MP)","url":"https://www.riksdagen.se/sv/dokument-och-lagar/dokument/betankande/ny-karnkraft-i-sverige-fler-mojliga-platser-vid_hd01nu24/"},
+      "yes_means": "support",
+      "cohesion_threshold": 0.8,
+      "minimum_decisive_votes": 3,
+      "party_tallies": {"S":{"yes":0,"no":105,"abstain":0,"absent":1},"SD":{"yes":70,"no":0,"abstain":0,"absent":0},"M":{"yes":66,"no":0,"abstain":0,"absent":0},"V":{"yes":0,"no":21,"abstain":0,"absent":0},"C":{"yes":0,"no":24,"abstain":0,"absent":0},"KD":{"yes":19,"no":0,"abstain":0,"absent":0},"MP":{"yes":0,"no":18,"abstain":0,"absent":0},"L":{"yes":16,"no":0,"abstain":0,"absent":0}}
+    },
+    {
+      "id": "R-2026-criminal-age-14",
+      "statement": "Straffbarhetsåldern ska sänkas till 14 år för allvarliga brott under en period om fem år.",
+      "topic": "kriminalpolitik",
+      "type": "proposal",
+      "source": {"rm":"2025/26","bet":"JuU41","point":2,"date":"2026-08-13","title":"Skärpta regler för unga lagöverträdare","decision":"Utskottets förslag mot reservation 1 (V, C, MP)","url":"https://www.riksdagen.se/sv/dokument-och-lagar/dokument/omrostning/omrostning-betankande-202526juu41-skarpta_hd19juu41p2/"},
+      "yes_means": "support",
+      "cohesion_threshold": 0.8,
+      "minimum_decisive_votes": 3,
+      "party_tallies": {"S":{"yes":105,"no":0,"abstain":0,"absent":1},"SD":{"yes":70,"no":0,"abstain":0,"absent":0},"M":{"yes":66,"no":0,"abstain":0,"absent":0},"V":{"yes":0,"no":21,"abstain":0,"absent":0},"C":{"yes":0,"no":23,"abstain":0,"absent":1},"KD":{"yes":19,"no":0,"abstain":0,"absent":0},"MP":{"yes":0,"no":18,"abstain":0,"absent":0},"L":{"yes":16,"no":0,"abstain":0,"absent":0}}
+    },
+    {
+      "id": "R-2026-public-position-abuse",
+      "statement": "Det ska införas ett särskilt brott, missbruk av offentlig ställning, för uppsåtliga regelbrott i offentlig verksamhet som syftar till en otillbörlig förmån eller till att otillbörligt missgynna någon.",
+      "topic": "demokrati",
+      "type": "proposal",
+      "source": {"rm":"2025/26","bet":"JuU40","point":2,"date":"2026-06-15","title":"Ett utökat straffrättsligt tjänstemannaansvar","decision":"Utskottets förslag mot reservation 2 (S, V, C, MP)","url":"https://www.riksdagen.se/sv/dokument-och-lagar/dokument/betankande/ett-utokat-straffrattsligt-tjanstemannaansvar_hd01juu40/"},
+      "yes_means": "support",
+      "cohesion_threshold": 0.8,
+      "minimum_decisive_votes": 3,
+      "party_tallies": {"S":{"yes":0,"no":105,"abstain":0,"absent":1},"SD":{"yes":70,"no":0,"abstain":0,"absent":0},"M":{"yes":66,"no":0,"abstain":0,"absent":0},"V":{"yes":0,"no":21,"abstain":0,"absent":0},"C":{"yes":0,"no":24,"abstain":0,"absent":0},"KD":{"yes":19,"no":0,"abstain":0,"absent":0},"MP":{"yes":0,"no":18,"abstain":0,"absent":0},"L":{"yes":16,"no":0,"abstain":0,"absent":0}}
     }
   ]
 }

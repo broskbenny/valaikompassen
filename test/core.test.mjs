@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   parseJsonLines,
   selectBalancedQuestions,
+  spreadQuestionClusters,
   computePartyResults,
   answeredCount,
   substantiveAnswerCount,
@@ -118,6 +119,44 @@ test("source-aware selection reserves a bounded share for direct Riksdagen votes
   }));
   const selected = selectBalancedQuestions([...program, ...votes], 24, seededRng(9));
   assert.equal(selected.filter((q) => q.source_kinds?.includes("riksdag_vote")).length, 5);
+});
+
+test("sampling treats related issues as a diversity brake, not as merged questions", () => {
+  const repeatedCluster = Array.from({ length: 4 }, (_, i) => ({
+    id: `clustered-${i}`,
+    topic: "energi",
+    issue_cluster_id: "nuclear",
+    source_kinds: ["riksdag_vote"],
+    position_parties: { support: PARTIES.slice(0, 4), oppose: PARTIES.slice(4) },
+  }));
+  const distinct = Array.from({ length: 4 }, (_, i) => ({
+    id: `distinct-${i}`,
+    topic: `topic-${i}`,
+    issue_cluster_id: `cluster-${i}`,
+    source_kinds: ["riksdag_vote"],
+    position_parties: { support: PARTIES.slice(0, 4), oppose: PARTIES.slice(4) },
+  }));
+  const selected = selectBalancedQuestions([...repeatedCluster, ...distinct], 4, seededRng(4));
+  assert.equal(selected.length, 4);
+  assert.ok(selected.filter((q) => q.issue_cluster_id === "nuclear").length <= 1);
+  assert.equal(new Set(selected.map((q) => q.id)).size, 4, "clustered questions remain distinct IDs");
+});
+
+test("final ordering avoids adjacent questions from the same cluster when possible", () => {
+  const questions = [
+    { id: "a1", issue_cluster_id: "a" },
+    { id: "a2", issue_cluster_id: "a" },
+    { id: "b1", issue_cluster_id: "b" },
+    { id: "b2", issue_cluster_id: "b" },
+    { id: "c1" },
+  ];
+  const ordered = spreadQuestionClusters(questions, seededRng(6));
+  assert.equal(new Set(ordered.map((q) => q.id)).size, questions.length);
+  for (let i = 1; i < ordered.length; i += 1) {
+    const previous = ordered[i - 1].issue_cluster_id;
+    const current = ordered[i].issue_cluster_id;
+    assert.ok(!previous || !current || previous !== current);
+  }
 });
 
 test("party result maps -2..2 to 0..100 for source-party questions", () => {
