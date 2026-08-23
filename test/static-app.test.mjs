@@ -15,15 +15,18 @@ test("app has all required views and answer options", () => {
   }
 });
 
-test("app builds displayed questions from programs and curated Riksdagen votes", () => {
+test("app builds displayed questions from programs, votes and issue clusters", () => {
   assert.match(app, /PARTIES\.map\(\(party\) => fetchText\(`data\/statements\/\$\{party\}\.jsonl`\)\)/);
   assert.match(app, /data\/sources\.json/);
   assert.match(app, /data\/question-bank\.json/);
   assert.match(app, /data\/riksdagen\/votes\.json/);
+  assert.match(app, /data\/issue-clusters\.json/);
   assert.match(app, /singleton_ids/);
   assert.match(app, /canonical_questions/);
   assert.match(app, /merge_program_ids/);
   assert.match(app, /deriveVotePartyPositions/);
+  assert.match(app, /applyIssueClusters/);
+  assert.match(app, /issue_cluster_id/);
   assert.match(app, /source_kinds/);
 });
 
@@ -37,12 +40,14 @@ test("party sources stay gated and all evidence is revealed only after answering
   assert.match(app, /Ja \$\{Number\(tally\.yes/);
   assert.match(app, /Avstår/);
   assert.match(app, /Frånvarande/);
+  assert.match(app, /Relaterad frågefamilj/);
 });
 
-test("new source layer invalidates older saved sessions", () => {
-  assert.match(app, /valaikompassen\.session\.v4/);
-  assert.match(app, /saved\?\.version === 4/);
+test("new cluster layer invalidates older saved sessions", () => {
+  assert.match(app, /valaikompassen\.session\.v5/);
+  assert.match(app, /saved\?\.version === 5/);
   assert.match(app, /\+riksdag-/);
+  assert.match(app, /\+clusters-/);
 });
 
 test("old equal-per-party promise is removed from the UI", () => {
@@ -52,10 +57,12 @@ test("old equal-per-party promise is removed from the UI", () => {
   assert.match(html, /Frågekvaliteten sänks aldrig för att fylla en partikvot/);
 });
 
-test("UI documents the parliamentary interpretation guardrail", () => {
+test("UI documents parliamentary interpretation and exact clustering guardrails", () => {
   assert.match(html, /En rå Ja-röst är inte automatiskt ett sakpolitiskt Ja/);
   assert.match(html, /minst 80 procent/);
   assert.match(html, /Avstående och frånvaro räknas inte som ställningstagande/);
+  assert.match(html, /Relaterade frågefamiljer/);
+  assert.match(html, /Frågorna slås alltså inte ihop bara för att de korrelerar politiskt/);
 });
 
 test("responsive and reduced-motion CSS are present", () => {
