@@ -5,6 +5,7 @@ import { PARTIES, parseJsonLines, deriveVotePartyPositions } from "../src/core.j
 
 const bank = JSON.parse(await readFile(new URL("../data/question-bank.json", import.meta.url), "utf8"));
 const votes = JSON.parse(await readFile(new URL("../data/riksdagen/votes.json", import.meta.url), "utf8"));
+const clusters = JSON.parse(await readFile(new URL("../data/issue-clusters.json", import.meta.url), "utf8"));
 
 const rawRows = (
   await Promise.all(
@@ -23,6 +24,12 @@ const canonicalSourceIds = canonical.flatMap((question) => [
   ...(question.positions?.oppose || []),
 ]);
 const usedSourceIds = [...singletonIds, ...canonicalSourceIds];
+const mergeProgramIds = new Set(votes.questions.flatMap((question) => question.merge_program_ids || []));
+const displayedIds = new Set([
+  ...singletonIds.filter((id) => !mergeProgramIds.has(id)),
+  ...canonical.map((question) => question.id),
+  ...votes.questions.map((question) => question.id),
+]);
 
 test("v0.3 program bank contains unique displayed questions and valid source rows", () => {
   assert.equal(bank.purpose, "canonical_compass_question_bank");
@@ -90,17 +97,40 @@ test("quality is not weakened to force an equal per-party quota", () => {
 test("curated Riksdagen votes are concrete, contested and source-linked", () => {
   assert.equal(votes.source, "Sveriges riksdag öppna data");
   assert.equal(votes.scope?.mandate_period, "2022-2026");
-  assert.ok(votes.questions.length >= 8);
+  assert.equal(votes.version, "0.2.0");
+  assert.equal(votes.questions.length, 11);
   assert.equal(new Set(votes.questions.map((question) => question.id)).size, votes.questions.length);
 
   for (const question of votes.questions) {
     assert.ok(question.statement?.length >= 8);
-    assert.match(question.source?.url || "", /^https:\/\/data\.riksdagen\.se\/dokument\//);
+    assert.match(
+      question.source?.url || "",
+      /^https:\/\/(?:data|www)\.riksdagen\.se\//,
+    );
     assert.deepEqual(Object.keys(question.party_tallies || {}).sort(), [...PARTIES].sort());
     const positions = deriveVotePartyPositions(question);
     assert.ok(positions.support.length > 0, `${question.id} needs a supported side`);
     assert.ok(positions.oppose.length > 0, `${question.id} needs an opposed side`);
   }
+});
+
+test("new 2025/26 votes use separate decision points rather than bundled packages", () => {
+  const criminalAge = votes.questions.find((question) => question.id === "R-2026-criminal-age-14");
+  assert.equal(criminalAge?.source?.rm, "2025/26");
+  assert.equal(criminalAge?.source?.bet, "JuU41");
+  assert.equal(criminalAge?.source?.point, 2);
+  assert.match(criminalAge?.statement || "", /14 år/);
+
+  const coastalNuclear = votes.questions.find((question) => question.id === "R-2026-coastal-nuclear-siting");
+  assert.equal(coastalNuclear?.source?.bet, "NU24");
+  assert.equal(coastalNuclear?.source?.point, 1);
+
+  const publicPosition = votes.questions.find((question) => question.id === "R-2026-public-position-abuse");
+  assert.equal(publicPosition?.source?.bet, "JuU40");
+  assert.equal(publicPosition?.source?.point, 2);
+
+  assert.ok((votes.excluded_examples || []).some((example) => example.reference.includes("JuU48")));
+  assert.ok((votes.excluded_examples || []).some((example) => example.reference.includes("JuU42")));
 });
 
 test("program/vote overlap is explicit rather than duplicated", () => {
@@ -111,6 +141,29 @@ test("program/vote overlap is explicit rather than duplicated", () => {
   const nato = votes.questions.find((question) => question.id === "Q-nato-membership");
   assert.deepEqual(nato?.merge_program_ids, ["M-2021-006"]);
   assert.ok(singletonIds.includes("M-2021-006"), "Nato starts as a program singleton and is suppressed only when vote data is combined");
+  assert.equal(displayedIds.size, 109);
+});
+
+test("issue clusters group related but distinct displayed questions", () => {
+  assert.equal(clusters.purpose, "related_issue_clusters");
+  assert.ok(clusters.clusters.length >= 8);
+  const membership = new Map();
+
+  for (const cluster of clusters.clusters) {
+    assert.ok(cluster.question_ids.length >= 2, `${cluster.id} needs at least two related questions`);
+    assert.ok(cluster.note.length >= 20, `${cluster.id} needs a distinction note`);
+    for (const questionId of cluster.question_ids) {
+      assert.ok(displayedIds.has(questionId), `${cluster.id} references unknown displayed question ${questionId}`);
+      assert.ok(!membership.has(questionId), `${questionId} cannot belong to two clusters`);
+      membership.set(questionId, cluster.id);
+    }
+  }
+
+  const nuclear = clusters.clusters.find((cluster) => cluster.id === "nuclear-role-and-expansion");
+  assert.deepEqual(
+    new Set(nuclear?.question_ids),
+    new Set(["Q-nuclear-free", "R-2025-state-support-nuclear", "R-2026-coastal-nuclear-siting"]),
+  );
 });
 
 test("abstention-heavy party groups are left unscored instead of forced into yes/no", () => {
