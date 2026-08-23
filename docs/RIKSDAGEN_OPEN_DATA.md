@@ -4,89 +4,82 @@
 
 Partiprogram visar vad partier säger att de vill göra. Voteringar visar hur riksdagens ledamöter faktiskt röstar när ett konkret förslag ställs under proposition. Val AI-kompassen använder därför utvalda direkta sakvoteringar som ett andra källager.
 
-Den första voteringsversionen avgränsas till mandatperioden 2022–2026 (riksmötena 2022/23, 2023/24, 2024/25 och 2025/26).
-
-Källa: Sveriges riksdag, öppna data: `https://www.riksdagen.se/sv/dokument-och-lagar/riksdagens-oppna-data/`.
+Voteringslagret avgränsas till mandatperioden 2022–2026: riksmötena 2022/23, 2023/24, 2024/25 och 2025/26.
 
 ## En rå Ja-röst är inte automatiskt sakpolitiskt stöd
 
-Riksdagen röstar om en bestämd **förslagspunkt**. Ofta står utskottets förslag mot en reservation. Därför måste tre saker granskas tillsammans innan en votering kan bli kompassfråga:
+Riksdagen röstar om en bestämd **förslagspunkt**. Ofta står utskottets förslag mot en reservation. Tre saker måste därför granskas tillsammans:
 
 1. vilken förslagspunkt voteringen gäller,
 2. vad ett Ja till huvudförslaget faktiskt innebär,
-3. vilket motförslag eller vilken reservation ett Nej i just den voteringen representerar.
+3. vilket motförslag eller vilken reservation ett Nej representerar.
 
-Det är alltså metodfel att enbart läsa kolumnen `rost = Ja` och översätta den till stöd för en självvald sakpolitisk formulering.
+Det är metodfel att enbart läsa `rost = Ja` och översätta den till stöd för en självvald politisk formulering.
 
-## Voteringar som exkluderas
+## Exklusionsregeln
 
 Följande går normalt inte in i kompassen:
 
 - procedurfrågor,
-- voteringar där förslagspunkten främst gäller avslag på en motion och motpositionen därför är oklar,
-- följdmotioner som inte isolerar den sakpolitiska konflikt vi vill mäta,
-- beslutspaket där flera politiskt separerbara reformer röstats igenom samtidigt och en enda användarfråga skulle kräva att väljaren håller med om allt,
+- tvetydiga avslagsvoteringar,
+- reservationer som inte isolerar den konflikt vi vill mäta,
+- beslutspaket med flera politiskt separerbara reformer,
 - frågor vars Ja/Nej-riktning inte kan beskrivas neutralt och entydigt,
-- voteringar där nästan alla partier står på samma sida och frågan därför saknar diskriminerande värde.
+- voteringar utan en meningsfull politisk motposition.
 
-Hellre exkluderas en intressant votering än att en partiomröstning övertolkas.
+`data/riksdagen/votes.json` innehåller också `excluded_examples` för att göra gränsdragningen testbar. I v0.2 dokumenteras bland annat varför 2025/26:JuU48 punkt 1 och 2025/26:JuU42 punkt 1 inte används: de innehåller för många separerbara straffrättsliga förändringar för att en knapptryckning säkert ska kunna tillskrivas en enda av dem.
 
 ## Från ledamotsröster till partiposition
 
-Riksdagens data innehåller ledamotsnivå: Ja, Nej, Avstår och Frånvarande. Kompassen gör inte frånvaro eller avstående till en politisk position.
+Riksdagens data innehåller Ja, Nej, Avstår och Frånvarande på ledamotsnivå. Frånvaro och avstående blir aldrig en position.
 
-För en viss partigrupp kodas `support` eller `oppose` endast när:
+För en partigrupp kodas `support` eller `oppose` endast när:
 
-- minst **3** ledamöter från partiet har avgivit Ja eller Nej, och
+- minst **3** ledamöter har avgivit Ja eller Nej, och
 - minst **80 %** av dessa avgivna Ja/Nej-röster går i samma riktning.
 
-Om kraven inte är uppfyllda lämnas partiet **okodat** på frågan. Det gäller exempelvis när partiet huvudsakligen avstår.
-
-Trösklarna finns per voteringspost i `data/riksdagen/votes.json`, så de är transparenta och testbara.
+Annars lämnas partiet okodat på frågan.
 
 ## Samma fråga, flera källor
 
-Om en riksdagsomröstning motsvarar en sakfråga som redan finns i programbanken ska den inte skapa en dubblett. Frågan ställs en gång och kan bära både programkälla och voteringskälla.
+Om en votering motsvarar en redan existerande sakfråga skapas ingen dubblett. Frågan kan bära både programkälla och voteringskälla, men den räknas fortfarande högst en gång per parti.
 
-Flera källor ger **inte** större poängvikt. De stärker bara källstödet.
+Om källorna ger motsatt position för samma parti på exakt samma fråga stoppas sammanslagningen för manuell granskning.
 
-Om programkälla och voteringskälla skulle placera samma parti på motsatta sidor av exakt samma canonical-fråga stoppar appens databyggare sammanslagningen. Konflikten måste då granskas manuellt; den får inte lösas genom att en källa prioriteras tyst.
+## Relaterat är inte samma sak
 
-## Kuraterad bank kontra genererad kandidatlista
+Voteringar skapar lätt flera frågor inom samma konfliktområde. Därför finns `data/issue-clusters.json`.
 
-`scripts/sync_riksdagen_votes.py` kan ladda ned riksdagens voteringsdataset och sammanställa ledamotsröster per omröstning. Resultatet är endast en **kandidatlista**.
+Exempelvis grupperas följande i samma kärnkraftsfamilj men hålls strikt separata:
 
-Den fil som appen använder är i stället `data/riksdagen/votes.json`. Varje post där är manuellt granskad mot förslagspunkten och har en neutral, konkret kompassformulering.
+- om Sverige på sikt ska ha kärnkraft,
+- om staten ska finansiera och riskdela investeringar i ny kärnkraft,
+- om förbud mot kärntekniska anläggningar i vissa kustområden ska tas bort.
 
-Detta är samma arkitektur som för partiprogrammen: automatisering hjälper oss hitta material, men den slutliga frågebanken har en mänsklig kvalitetsgrind.
+Klustret påverkar endast frågespridningen. Det ändrar inte formulering, partiposition eller poäng.
 
-## Första kuraterade voteringsuppsättningen
+## Kuraterad bank kontra kandidatlista
 
-Den första versionen innehåller bland annat frågor om:
+`scripts/sync_riksdagen_votes.py` kan hämta riksdagens voteringsdataset och skapa en bred kandidatlista. Den fil som appen använder är däremot `data/riksdagen/votes.json`, där varje rad är manuellt granskad.
 
-- Sveriges Nato-medlemskap,
-- säkerhetszoner,
-- preventiva vistelseförbud,
-- anonyma vittnen,
-- reduktionsplikten,
-- åldersgränsen för avgiftsfri tandvård,
-- gårdsförsäljning av alkohol,
-- statlig finansiering och riskdelning för ny kärnkraft.
+Automatisering hittar material; den publicerar inte politiska tolkningar.
 
-Nato-frågan sammanfogas med befintligt programstöd i stället för att visas två gånger.
+## Voteringsbank v0.2
+
+Den kuraterade banken innehåller **11** direkta omröstningar. Utöver den första uppsättningen har tre tydligt separerade beslutspunkter från riksmötet 2025/26 lagts till:
+
+- `2025/26:NU24`, punkt 1: lagändringar som öppnar fler utpekade kustområden för kärntekniska anläggningar,
+- `2025/26:JuU41`, punkt 2: sänkt straffbarhetsålder till 14 år för allvarliga brott under fem år,
+- `2025/26:JuU40`, punkt 2: införandet av brottet missbruk av offentlig ställning.
+
+De används just därför att Riksdagen har brutit ut den relevanta konflikten som en egen förslagspunkt.
 
 ## Reproducerbarhet
 
-Validera den kuraterade voteringsbanken med:
-
 ```bash
 python3 scripts/validate_riksdagen_votes.py
-```
-
-Skapa en ny rå kandidatlista från Riksdagens dataset med exempelvis:
-
-```bash
+python3 scripts/validate_issue_clusters.py
 python3 scripts/sync_riksdagen_votes.py --rm 2025/26 --output /tmp/voteringar-202526.json
 ```
 
-Den genererade filen ska aldrig kopieras automatiskt till den publika frågebanken.
+Den genererade kandidatfilen ska aldrig kopieras automatiskt till den publika frågebanken.
