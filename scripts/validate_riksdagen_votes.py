@@ -12,6 +12,10 @@ VOTES_PATH = ROOT / "data" / "riksdagen" / "votes.json"
 STATEMENTS_DIR = ROOT / "data" / "statements"
 PARTIES = ("S", "M", "SD", "C", "V", "KD", "MP", "L")
 TALLY_KEYS = ("yes", "no", "abstain", "absent")
+OFFICIAL_URL_PREFIXES = (
+    "https://data.riksdagen.se/dokument/",
+    "https://www.riksdagen.se/sv/dokument-och-lagar/dokument/",
+)
 
 
 def classify(tally: dict, threshold: float, minimum: int) -> str | None:
@@ -36,6 +40,12 @@ def main() -> int:
         for line in path.read_text(encoding="utf-8").splitlines():
             if line.strip():
                 raw_ids.add(json.loads(line)["id"])
+
+    for example in data.get("excluded_examples", []):
+        if not str(example.get("reference", "")).strip():
+            errors.append("excluded_examples entry missing reference")
+        if len(str(example.get("reason", "")).strip()) < 20:
+            errors.append(f"{example.get('reference', 'excluded example')}: exclusion reason is too short")
 
     merged_program_ids: set[str] = set()
     for question in questions:
@@ -66,8 +76,9 @@ def main() -> int:
         for key in ("rm", "bet", "point", "date", "title", "decision", "url"):
             if source.get(key) in (None, ""):
                 errors.append(f"{qid}: source.{key} missing")
-        if not str(source.get("url", "")).startswith("https://data.riksdagen.se/dokument/"):
-            errors.append(f"{qid}: source.url is not a Riksdagen data document URL")
+        source_url = str(source.get("url", ""))
+        if not any(source_url.startswith(prefix) for prefix in OFFICIAL_URL_PREFIXES):
+            errors.append(f"{qid}: source.url is not an official Riksdagen document URL")
 
         tallies = question.get("party_tallies", {})
         if set(tallies) != set(PARTIES):
